@@ -108,7 +108,6 @@ extern "C" Datum _postgis_gserialized_stats(PG_FUNCTION_ARGS);
 
 /* Old Prototype */
 extern "C" Datum geometry_estimated_extent(PG_FUNCTION_ARGS);
-extern char *es_get_ext_info(AttrNumber attnum);
 
 /**
 * Assign a number to the n-dimensional statistics kind
@@ -881,8 +880,7 @@ pg_get_nd_stats(const Oid table_oid, AttrNumber att_num, int mode, bool only_par
 	{
 		POSTGIS_DEBUGF(2, "searching whole tree stats for \"%s\"", get_rel_name(table_oid)? get_rel_name(table_oid) : "NULL");
 	//	stats_tuple = SearchSysCache3(STATRELATT, table_oid, att_num, TRUE);
-                char            *ext_info = es_get_ext_info(att_num);
-		 stats_tuple = SearchSysCache4(STATRELATT, ObjectIdGetDatum(table_oid), CharGetDatum(STARELKIND_CLASS), FALSE, CStringGetTextDatum(ext_info));
+		 stats_tuple = SearchSysCache4(STATRELATT, ObjectIdGetDatum(table_oid), CharGetDatum(STARELKIND_CLASS), Int16GetDatum(att_num), FALSE);
 		if ( stats_tuple )
 			POSTGIS_DEBUGF(2, "found whole tree stats for \"%s\"", get_rel_name(table_oid)? get_rel_name(table_oid) : "NULL");
 	}
