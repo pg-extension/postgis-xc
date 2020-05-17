@@ -53,9 +53,20 @@ rt_raster_same_alignment(
 	double yw;
 	int err = 0;
 
-	assert(NULL != rast1);
-	assert(NULL != rast2);
-	assert(NULL != aligned);
+	//assert(NULL != rast1);
+	//assert(NULL != rast2);
+	//assert(NULL != aligned);
+	if (NULL == rast1) {
+		rterror("rt_raster_same_alignment: rast1 cannot be NULL.");
+	}
+
+	if (NULL == rast2) {
+		rterror("rt_raster_same_alignment: rast2 cannot be NULL.");
+	}
+
+	if (NULL == aligned) {
+		rterror("rt_raster_same_alignment: aligned cannot be NULL.");
+	}
 
 	err = 0;
 	/* same srid */
@@ -149,9 +160,21 @@ rt_errorstate rt_raster_geos_spatial_relationship(
 
 	RASTER_DEBUG(3, "Starting");
 
-	assert(NULL != rast1);
-	assert(NULL != rast2);
-	assert(NULL != testresult);
+	//assert(NULL != rast1);
+	//assert(NULL != rast2);
+	//assert(NULL != testresult);
+
+	if (NULL == rast1) {
+		rterror("rt_raster_geos_spatial_relationship: rast1 cannot be NULL.");
+	}
+
+	if (NULL == rast2) {
+		rterror("rt_raster_geos_spatial_relationship: rast2 cannot be NULL.");
+	}
+
+	if (NULL == testresult) {
+		rterror("rt_raster_geos_spatial_relationship: testresult cannot be NULL.");
+	}
 
 	if (nband1 < 0 && nband2 < 0) {
 		nband1 = -1;
@@ -470,9 +493,21 @@ rt_errorstate rt_raster_within_distance(
 
 	RASTER_DEBUG(3, "Starting");
 
-	assert(NULL != rast1);
-	assert(NULL != rast2);
-	assert(NULL != dwithin);
+	//assert(NULL != rast1);
+	//assert(NULL != rast2);
+	//assert(NULL != dwithin);
+
+	if (NULL == rast1) {
+		rterror("rt_raster_within_distance: rast1 cannot be NULL.");
+	}
+
+	if (NULL == rast2) {
+		rterror("rt_raster_within_distance: rast2 cannot be NULL.");
+	}
+
+	if (NULL == dwithin) {
+		rterror("rt_raster_within_distance: dwithin cannot be NULL.");
+	}
 
 	if (nband1 < 0 && nband2 < 0) {
 		nband1 = -1;
@@ -565,9 +600,20 @@ rt_errorstate rt_raster_fully_within_distance(
 
 	RASTER_DEBUG(3, "Starting");
 
-	assert(NULL != rast1);
-	assert(NULL != rast2);
-	assert(NULL != dfwithin);
+	//assert(NULL != rast1);
+	//assert(NULL != rast2);
+	//assert(NULL != dfwithin);
+	if (NULL == rast1) {
+		rterror("rt_raster_fully_within_distance: rast1 cannot be NULL.");
+	}
+
+	if (NULL == rast2) {
+		rterror("rt_raster_fully_within_distance: rast2 cannot be NULL.");
+	}
+
+	if (NULL == dfwithin) {
+		rterror("rt_raster_fully_within_distance: dfwithin cannot be NULL.");
+	}
 
 	if (nband1 < 0 && nband2 < 0) {
 		nband1 = -1;
@@ -1042,9 +1088,21 @@ rt_raster_intersects(
 
 	RASTER_DEBUG(3, "Starting");
 
-	assert(NULL != rast1);
-	assert(NULL != rast2);
-	assert(NULL != intersects);
+	//assert(NULL != rast1);
+	//assert(NULL != rast2);
+	//assert(NULL != intersects);
+
+	if (NULL == rast1) {
+		rterror("rt_raster_intersects: rast1 cannot be NULL.");
+	}
+
+	if (NULL == rast2) {
+		rterror("rt_raster_intersects: rast2 cannot be NULL.");
+	}
+
+	if (NULL == intersects) {
+		rterror("rt_raster_intersects: intersects cannot be NULL.");
+	}
 
 	if (nband1 < 0 && nband2 < 0) {
 		nband1 = -1;

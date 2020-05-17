@@ -1,10 +1,11 @@
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
-#include "postgres.h"
-#include "funcapi.h"
-#include "catalog/pg_type.h"
-#include "fmgr.h"
+//#include "postgres.h"
+//#include "funcapi.h"
+//#include "catalog/pg_type.h"
+//#include "fmgr.h"
+#include "extension_dependency.h"
 
 #include "parseaddress-api.h"
 #include <pcre.h>

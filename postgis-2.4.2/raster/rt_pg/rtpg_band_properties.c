@@ -27,36 +27,39 @@
  *
  */
 
-#include <postgres.h>
-#include <fmgr.h>
-#include <funcapi.h>
-#include <utils/builtins.h>
-#include "utils/lsyscache.h" /* for get_typlenbyvalalign */
-#include "utils/array.h" /* for ArrayType */
-#include "catalog/pg_type.h" /* for INT2OID, INT4OID, FLOAT4OID, FLOAT8OID and TEXTOID */
+//#include <postgres.h>
+//#include <fmgr.h>
+//#include <funcapi.h>
+//#include <utils/builtins.h>
+//#include "utils/lsyscache.h" /* for get_typlenbyvalalign */
+//#include "utils/array.h" /* for ArrayType */
+//#include "catalog/pg_type.h" /* for INT2OID, INT4OID, FLOAT4OID, FLOAT8OID and TEXTOID */
 
 #include "../../postgis_config.h"
+#include "extension_dependency.h"
 
 
-#include "access/htup_details.h" /* for heap_form_tuple() */
+//#include "access/htup_details.h" /* for heap_form_tuple() */
 
 
 #include "rtpostgis.h"
 
 /* Get all the properties of a raster band */
-Datum RASTER_getBandPixelType(PG_FUNCTION_ARGS);
-Datum RASTER_getBandPixelTypeName(PG_FUNCTION_ARGS);
-Datum RASTER_getBandNoDataValue(PG_FUNCTION_ARGS);
-Datum RASTER_getBandPath(PG_FUNCTION_ARGS);
-Datum RASTER_bandIsNoData(PG_FUNCTION_ARGS);
+extern "C"
+{
+	Datum RASTER_getBandPixelType(PG_FUNCTION_ARGS);
+	Datum RASTER_getBandPixelTypeName(PG_FUNCTION_ARGS);
+	Datum RASTER_getBandNoDataValue(PG_FUNCTION_ARGS);
+	Datum RASTER_getBandPath(PG_FUNCTION_ARGS);
+	Datum RASTER_bandIsNoData(PG_FUNCTION_ARGS);
 
-/* get raster band's meta data */
-Datum RASTER_bandmetadata(PG_FUNCTION_ARGS);
+	/* get raster band's meta data */
+	Datum RASTER_bandmetadata(PG_FUNCTION_ARGS);
 
-/* Set all the properties of a raster band */
-Datum RASTER_setBandIsNoData(PG_FUNCTION_ARGS);
-Datum RASTER_setBandNoDataValue(PG_FUNCTION_ARGS);
-
+	/* Set all the properties of a raster band */
+	Datum RASTER_setBandIsNoData(PG_FUNCTION_ARGS);
+	Datum RASTER_setBandNoDataValue(PG_FUNCTION_ARGS);
+}
 /**
  * Return pixel type of the specified band of raster.
  * Band index is 1-based.

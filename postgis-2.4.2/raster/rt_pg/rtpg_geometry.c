@@ -27,13 +27,15 @@
  *
  */
 
-#include <postgres.h>
-#include <fmgr.h>
-#include <funcapi.h>
-#include <utils/lsyscache.h> /* for get_typlenbyvalalign */
-#include <utils/array.h> /* for ArrayType */
-#include <catalog/pg_type.h> /* for INT2OID, INT4OID, FLOAT4OID, FLOAT8OID and TEXTOID */
-#include <utils/builtins.h> /* for text_to_cstring() */
+//#include <postgres.h>
+//#include <fmgr.h>
+//#include <funcapi.h>
+//#include <utils/lsyscache.h> /* for get_typlenbyvalalign */
+//#include <utils/array.h> /* for ArrayType */
+//#include <catalog/pg_type.h> /* for INT2OID, INT4OID, FLOAT4OID, FLOAT8OID and TEXTOID */
+//#include <utils/builtins.h> /* for text_to_cstring() */
+
+#include "extension_dependency.h"
 
 #include "../../postgis_config.h"
 
@@ -46,18 +48,20 @@
 #include "rtpostgis.h"
 #include "rtpg_internal.h"
 
-Datum RASTER_envelope(PG_FUNCTION_ARGS);
-Datum RASTER_convex_hull(PG_FUNCTION_ARGS);
-Datum RASTER_dumpAsPolygons(PG_FUNCTION_ARGS);
+extern "C" {
+	Datum RASTER_envelope(PG_FUNCTION_ARGS);
+	Datum RASTER_convex_hull(PG_FUNCTION_ARGS);
+	Datum RASTER_dumpAsPolygons(PG_FUNCTION_ARGS);
 
-/* Get pixel geographical shape */
-Datum RASTER_getPixelPolygons(PG_FUNCTION_ARGS);
+	/* Get pixel geographical shape */
+	Datum RASTER_getPixelPolygons(PG_FUNCTION_ARGS);
 
-/* Get raster band's polygon */
-Datum RASTER_getPolygon(PG_FUNCTION_ARGS);
+	/* Get raster band's polygon */
+	Datum RASTER_getPolygon(PG_FUNCTION_ARGS);
 
-/* rasterize a geometry */
-Datum RASTER_asRaster(PG_FUNCTION_ARGS);
+	/* rasterize a geometry */
+	Datum RASTER_asRaster(PG_FUNCTION_ARGS);
+}
 
 /* ---------------------------------------------------------------- */
 /*  Raster envelope                                                 */

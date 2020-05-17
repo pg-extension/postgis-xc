@@ -32,12 +32,14 @@
 
 #include "rtpostgis.h"
 
-Datum RASTER_in(PG_FUNCTION_ARGS);
-Datum RASTER_out(PG_FUNCTION_ARGS);
-Datum RASTER_noop(PG_FUNCTION_ARGS);
+extern "C" {
+	Datum RASTER_in(PG_FUNCTION_ARGS);
+	Datum RASTER_out(PG_FUNCTION_ARGS);
+	Datum RASTER_noop(PG_FUNCTION_ARGS);
 
-Datum RASTER_to_bytea(PG_FUNCTION_ARGS);
-Datum RASTER_to_binary(PG_FUNCTION_ARGS);
+	Datum RASTER_to_bytea(PG_FUNCTION_ARGS);
+	Datum RASTER_to_binary(PG_FUNCTION_ARGS);
+}
 
 /**
  * Input is a string with hex chars in it.

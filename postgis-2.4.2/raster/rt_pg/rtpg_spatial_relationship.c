@@ -36,35 +36,37 @@
 #include "rtpostgis.h"
 
 /* determine if two rasters intersect */
-Datum RASTER_intersects(PG_FUNCTION_ARGS);
+extern "C" {
+	Datum RASTER_intersects(PG_FUNCTION_ARGS);
 
-/* determine if two rasters overlap */
-Datum RASTER_overlaps(PG_FUNCTION_ARGS);
+	/* determine if two rasters overlap */
+	Datum RASTER_overlaps(PG_FUNCTION_ARGS);
 
-/* determine if two rasters touch */
-Datum RASTER_touches(PG_FUNCTION_ARGS);
+	/* determine if two rasters touch */
+	Datum RASTER_touches(PG_FUNCTION_ARGS);
 
-/* determine if the first raster contains the second raster */
-Datum RASTER_contains(PG_FUNCTION_ARGS);
+	/* determine if the first raster contains the second raster */
+	Datum RASTER_contains(PG_FUNCTION_ARGS);
 
-/* determine if the first raster contains properly the second raster */
-Datum RASTER_containsProperly(PG_FUNCTION_ARGS);
+	/* determine if the first raster contains properly the second raster */
+	Datum RASTER_containsProperly(PG_FUNCTION_ARGS);
 
-/* determine if the first raster covers the second raster */
-Datum RASTER_covers(PG_FUNCTION_ARGS);
+	/* determine if the first raster covers the second raster */
+	Datum RASTER_covers(PG_FUNCTION_ARGS);
 
-/* determine if the first raster is covered by the second raster */
-Datum RASTER_coveredby(PG_FUNCTION_ARGS);
+	/* determine if the first raster is covered by the second raster */
+	Datum RASTER_coveredby(PG_FUNCTION_ARGS);
 
-/* determine if the two rasters are within the specified distance of each other */
-Datum RASTER_dwithin(PG_FUNCTION_ARGS);
+	/* determine if the two rasters are within the specified distance of each other */
+	Datum RASTER_dwithin(PG_FUNCTION_ARGS);
 
-/* determine if the two rasters are fully within the specified distance of each other */
-Datum RASTER_dfullywithin(PG_FUNCTION_ARGS);
+	/* determine if the two rasters are fully within the specified distance of each other */
+	Datum RASTER_dfullywithin(PG_FUNCTION_ARGS);
 
-/* determine if two rasters are aligned */
-Datum RASTER_sameAlignment(PG_FUNCTION_ARGS);
-Datum RASTER_notSameAlignmentReason(PG_FUNCTION_ARGS);
+	/* determine if two rasters are aligned */
+	Datum RASTER_sameAlignment(PG_FUNCTION_ARGS);
+	Datum RASTER_notSameAlignmentReason(PG_FUNCTION_ARGS);
+}
 
 /**
  * See if two rasters intersect

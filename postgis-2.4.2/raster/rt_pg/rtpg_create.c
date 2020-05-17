@@ -27,26 +27,33 @@
  *
  */
 
-#include <postgres.h>
-#include <fmgr.h>
-#include <funcapi.h>
-#include <utils/builtins.h> /* for text_to_cstring() */
-#include "utils/lsyscache.h" /* for get_typlenbyvalalign */
-#include "utils/array.h" /* for ArrayType */
-#include "catalog/pg_type.h" /* for INT2OID, INT4OID, FLOAT4OID, FLOAT8OID and TEXTOID */
+//#include <postgres.h>
+//#include <fmgr.h>
+//#include <funcapi.h>
+//#include <utils/builtins.h> /* for text_to_cstring() */
+//#include "utils/lsyscache.h" /* for get_typlenbyvalalign */
+//#include "utils/array.h" /* for ArrayType */
+//#include "catalog/pg_type.h" /* for INT2OID, INT4OID, FLOAT4OID, FLOAT8OID and TEXTOID */
+
+#include "extension_dependency.h"
 
 #include "rtpostgis.h"
 
 /* Raster and band creation */
-Datum RASTER_makeEmpty(PG_FUNCTION_ARGS);
-Datum RASTER_addBand(PG_FUNCTION_ARGS);
-Datum RASTER_addBandRasterArray(PG_FUNCTION_ARGS);
-Datum RASTER_addBandOutDB(PG_FUNCTION_ARGS);
-Datum RASTER_copyBand(PG_FUNCTION_ARGS);
-Datum RASTER_tile(PG_FUNCTION_ARGS);
+extern "C" {
+	Datum RASTER_makeEmpty(PG_FUNCTION_ARGS);
+	Datum RASTER_addBand(PG_FUNCTION_ARGS);
+	Datum RASTER_addBandRasterArray(PG_FUNCTION_ARGS);
+	Datum RASTER_addBandOutDB(PG_FUNCTION_ARGS);
+	Datum RASTER_copyBand(PG_FUNCTION_ARGS);
+	Datum RASTER_tile(PG_FUNCTION_ARGS);
 
-/* create new raster from existing raster's bands */
-Datum RASTER_band(PG_FUNCTION_ARGS);
+	/* create new raster from existing raster's bands */
+	Datum RASTER_band(PG_FUNCTION_ARGS);
+	void _PG_init_gdal(void);
+}
+
+extern THR_LOCAL bool inited_gdal;
 
 /**
  * Make a new raster with no bands
@@ -155,6 +162,10 @@ Datum RASTER_addBand(PG_FUNCTION_ARGS)
 	Datum tupv;
 
 	int i = 0;
+
+	if (inited_gdal == false) {
+		_PG_init_gdal();
+	}
 
 	/* pgraster is null, return null */
 	if (PG_ARGISNULL(0))
@@ -436,6 +447,11 @@ Datum RASTER_addBandRasterArray(PG_FUNCTION_ARGS)
 
 	/* process set of source rasters */
 	POSTGIS_RT_DEBUG(3, "Processing array of source rasters");
+
+	if (PG_ARGISNULL(1) == true) {
+		elog(ERROR, "RASTER: fromrasts cannot be NULL.");
+	}
+
 	array = PG_GETARG_ARRAYTYPE_P(1);
 	etype = ARR_ELEMTYPE(array);
 	get_typlenbyvalalign(etype, &typlen, &typbyval, &typalign);
@@ -577,6 +593,10 @@ Datum RASTER_addBandOutDB(PG_FUNCTION_ARGS)
 	rt_raster _rast = NULL;
 	int aligned = 0;
 	int err = 0;
+
+	if (inited_gdal == false) {
+		_PG_init_gdal();
+	}
 
 	/* destination raster */
 	if (!PG_ARGISNULL(0)) {

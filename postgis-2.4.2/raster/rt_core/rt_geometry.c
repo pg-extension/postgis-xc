@@ -975,8 +975,15 @@ rt_raster_gdal_polygonize(
 	int excludeNodataValues[1] = {exclude_nodata_value};
 
 	/* checks */
-	assert(NULL != raster);
-	assert(NULL != pnElements);
+	//assert(NULL != raster);
+	//assert(NULL != pnElements);
+	if (NULL == raster) {
+		rterror("rt_raster_gdal_polygonize: raster cannot is null.");
+	}
+
+	if (NULL == pnElements) {
+		rterror("rt_raster_gdal_polygonize: pnElements cannot is null.");
+	}
 
 	RASTER_DEBUG(2, "In rt_raster_gdal_polygonize");
 

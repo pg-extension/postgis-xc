@@ -27,10 +27,11 @@
  *
  */
 
-#include <ctype.h> /* for isspace */
-#include <postgres.h> /* for palloc */
-#include <executor/spi.h>
+//#include <ctype.h> /* for isspace */
+//#include <postgres.h> /* for palloc */
+//#include <executor/spi.h>
 
+#include "extension_dependency.h"
 #include "rtpg_internal.h"
 
 /* string replacement function taken from
@@ -143,12 +144,13 @@ rtpg_strsplit(const char *str, const char *delimiter, int *n) {
 	char *tmp = NULL;
 	char **rtn = NULL;
 	char *token = NULL;
+	char *saveptr = NULL;
 
 	*n = 0;
 	if (!str)
 		return NULL;
 
-	/* copy str to tmp as strtok will mangle the string */
+	/* copy str to tmp as strtok_r will mangle the string */
 	tmp = palloc(sizeof(char) * (strlen(str) + 1));
 	if (NULL == tmp) {
 		fprintf(stderr, "Not enough memory\n");
@@ -173,7 +175,7 @@ rtpg_strsplit(const char *str, const char *delimiter, int *n) {
 		return rtn;
 	}
 
-	token = strtok(tmp, delimiter);
+	token = strtok_r(tmp, delimiter, &saveptr);
 	while (token != NULL) {
 		if (*n < 1) {
 			rtn = (char **) palloc(sizeof(char *));
@@ -196,7 +198,7 @@ rtpg_strsplit(const char *str, const char *delimiter, int *n) {
 		strcpy(rtn[*n], token);
 		*n = *n + 1;
 
-		token = strtok(NULL, delimiter);
+		token = strtok_r(NULL, delimiter, &saveptr);
 	}
 
 	pfree(tmp);
@@ -324,7 +326,11 @@ LIMIT 1
 	snprintf(sql, len, "SELECT CASE WHEN (upper(auth_name) = 'EPSG' OR upper(auth_name) = 'EPSGA') AND length(COALESCE(auth_srid::text, '')) > 0 THEN upper(auth_name) || ':' || auth_srid WHEN length(COALESCE(auth_name, '') || COALESCE(auth_srid::text, '')) > 0 THEN COALESCE(auth_name, '') || COALESCE(auth_srid::text, '') ELSE '' END, proj4text, srtext FROM spatial_ref_sys WHERE srid = %d LIMIT 1", srid);
 	POSTGIS_RT_DEBUGF(4, "SRS query: %s", sql);
 	spi_result = SPI_execute(sql, TRUE, 0);
-	SPI_pfree(sql);
+	//SPI_pfree(sql);
+	if (sql != NULL) {
+		pfree(sql);
+		sql = NULL;
+	}
 	if (spi_result != SPI_OK_SELECT || SPI_tuptable == NULL || SPI_processed != 1) {
 		if (SPI_tuptable) SPI_freetuptable(tuptable);
 		SPI_finish();

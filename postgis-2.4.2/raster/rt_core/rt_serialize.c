@@ -463,7 +463,10 @@ rt_raster_serialized_size(rt_raster raster) {
 	uint32_t size = sizeof (struct rt_raster_serialized_t);
 	uint16_t i = 0;
 
-	assert(NULL != raster);
+	//assert(NULL != raster);
+	if (NULL == raster) {
+		rterror("rt_raster_serialized_size: raster cannot be NULL.");
+	}
 
 	RASTER_DEBUGF(3, "Serialized size with just header:%d - now adding size of %d bands",
 		size, raster->numBands);
@@ -524,7 +527,10 @@ rt_raster_serialize(rt_raster raster) {
 	uint8_t* ptr = NULL;
 	uint16_t i = 0;
 
-	assert(NULL != raster);
+	//assert(NULL != raster);
+	if (NULL == raster) {
+		rterror("rt_raster_serialize: raster cannot be NULL.");
+	}
 
 	size = rt_raster_serialized_size(raster);
 	ret = (uint8_t*) rtalloc(size);
@@ -566,7 +572,10 @@ rt_raster_serialize(rt_raster raster) {
 	/* Serialize bands now */
 	for (i = 0; i < raster->numBands; ++i) {
 		rt_band band = raster->bands[i];
-		assert(NULL != band);
+		//assert(NULL != band);
+		if (NULL == band) {
+			rterror("rt_raster_serialize: band cannot be NULL.");
+		}
 
 		rt_pixtype pixtype = band->pixtype;
 		int pixbytes = rt_pixtype_size(pixtype);
@@ -722,7 +731,10 @@ rt_raster_deserialize(void* serialized, int header_only) {
 	uint16_t j = 0;
 	uint8_t littleEndian = isMachineLittleEndian();
 
-	assert(NULL != serialized);
+	//assert(NULL != serialized);
+	if (NULL == serialized) {
+		rterror("rt_raster_deserialize: serialized cannot be NULL.");
+	}
 
 	RASTER_DEBUG(2, "rt_raster_deserialize: Entering...");
 

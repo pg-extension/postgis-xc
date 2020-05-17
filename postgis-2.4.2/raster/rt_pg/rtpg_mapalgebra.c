@@ -30,15 +30,17 @@
 
 #include <assert.h>
 
-#include <postgres.h> /* for palloc */
-#include <fmgr.h>
-#include <funcapi.h>
-#include <executor/spi.h>
-#include <utils/lsyscache.h> /* for get_typlenbyvalalign */
-#include <utils/array.h> /* for ArrayType */
-#include <utils/builtins.h>
-#include <catalog/pg_type.h> /* for INT2OID, INT4OID, FLOAT4OID, FLOAT8OID and TEXTOID */
-#include <executor/executor.h> /* for GetAttributeByName */
+//#include <postgres.h> /* for palloc */
+//#include <fmgr.h>
+//#include <funcapi.h>
+//#include <executor/spi.h>
+//#include <utils/lsyscache.h> /* for get_typlenbyvalalign */
+//#include <utils/array.h> /* for ArrayType */
+//#include <utils/builtins.h>
+//#include <catalog/pg_type.h> /* for INT2OID, INT4OID, FLOAT4OID, FLOAT8OID and TEXTOID */
+//#include <executor/executor.h> /* for GetAttributeByName */
+
+#include "extension_dependency.h"
 
 #include "../../postgis_config.h"
 #include "lwgeom_pg.h"
@@ -47,31 +49,33 @@
 #include "rtpg_internal.h"
 
 /* n-raster MapAlgebra */
-Datum RASTER_nMapAlgebra(PG_FUNCTION_ARGS);
-Datum RASTER_nMapAlgebraExpr(PG_FUNCTION_ARGS);
+extern "C" {
+	Datum RASTER_nMapAlgebra(PG_FUNCTION_ARGS);
+	Datum RASTER_nMapAlgebraExpr(PG_FUNCTION_ARGS);
 
-/* raster union aggregate */
-Datum RASTER_union_transfn(PG_FUNCTION_ARGS);
-Datum RASTER_union_finalfn(PG_FUNCTION_ARGS);
+	/* raster union aggregate */
+	Datum RASTER_union_transfn(PG_FUNCTION_ARGS);
+	Datum RASTER_union_finalfn(PG_FUNCTION_ARGS);
 
-/* raster clip */
-Datum RASTER_clip(PG_FUNCTION_ARGS);
+	/* raster clip */
+	Datum RASTER_clip(PG_FUNCTION_ARGS);
 
-/* reclassify specified bands of a raster */
-Datum RASTER_reclass(PG_FUNCTION_ARGS);
+	/* reclassify specified bands of a raster */
+	Datum RASTER_reclass(PG_FUNCTION_ARGS);
 
-/* apply colormap to specified band of a raster */
-Datum RASTER_colorMap(PG_FUNCTION_ARGS);
+	/* apply colormap to specified band of a raster */
+	Datum RASTER_colorMap(PG_FUNCTION_ARGS);
 
-/* one-raster MapAlgebra */
-Datum RASTER_mapAlgebraExpr(PG_FUNCTION_ARGS);
-Datum RASTER_mapAlgebraFct(PG_FUNCTION_ARGS);
+	/* one-raster MapAlgebra */
+	Datum RASTER_mapAlgebraExpr(PG_FUNCTION_ARGS);
+	Datum RASTER_mapAlgebraFct(PG_FUNCTION_ARGS);
 
-/* one-raster neighborhood MapAlgebra */
-Datum RASTER_mapAlgebraFctNgb(PG_FUNCTION_ARGS);
+	/* one-raster neighborhood MapAlgebra */
+	Datum RASTER_mapAlgebraFctNgb(PG_FUNCTION_ARGS);
 
-/* two-raster MapAlgebra */
-Datum RASTER_mapAlgebra2(PG_FUNCTION_ARGS);
+	/* two-raster MapAlgebra */
+	Datum RASTER_mapAlgebra2(PG_FUNCTION_ARGS);
+}
 
 /* ---------------------------------------------------------------- */
 /*  n-raster MapAlgebra                                             */
@@ -107,6 +111,26 @@ struct rtpg_nmapalgebra_arg_t {
 
 	rtpg_nmapalgebra_callback_arg	callback;
 };
+
+bool function_args_consistent_check(Oid funcId, int nargs, Oid* args)
+{
+	HeapTuple	tp;
+
+	tp = SearchSysCache1(PROCOID, ObjectIdGetDatum(funcId));
+	if (HeapTupleIsValid(tp))
+	{
+		Form_pg_proc functup = (Form_pg_proc) GETSTRUCT(tp);
+		ReleaseSysCache(tp);
+		for (int i = 0; i < nargs; i++)
+		{
+			if (functup->proargtypes.values[i] != args[i])
+				return false;
+		}
+		return true;
+	}
+	else
+		return false;
+}
 
 static rtpg_nmapalgebra_arg rtpg_nmapalgebra_arg_init() {
 	rtpg_nmapalgebra_arg arg = NULL;
@@ -808,6 +832,20 @@ Datum RASTER_nMapAlgebra(PG_FUNCTION_ARGS)
 			noerr = 4;
 		}
 
+		/* Check the arguments of callback function, which must have three arguments:
+		 *a 3-dimensiondoubleprecisionarray, a 2-dimensionintegerarrayanda variadic 1-dimension text array.
+		 */
+
+		Oid* argsType = (Oid*)palloc(sizeof(Oid) * 3);
+		argsType[0] = FLOAT8ARRAYOID;
+		argsType[1] = INT4ARRAYOID;
+		argsType[2] = TEXTARRAYOID;
+		if (function_args_consistent_check(arg->callback.ufc_noid, 3, argsType) == false)
+		{
+			 elog(ERROR, "RASTER_mapAlgebra: Parameters of callback function are incorrect");
+		}
+		pfree(argsType);
+
 		/*
 			TODO: consider adding checks of the userfunction parameters
 				should be able to use get_fn_expr_argtype() of fmgr.c
@@ -832,9 +870,10 @@ Datum RASTER_nMapAlgebra(PG_FUNCTION_ARGS)
 			PG_RETURN_NULL();
 		}
 
+		/*
 		if (func_volatile(arg->callback.ufc_noid) == 'v')
 			elog(NOTICE, "Function provided is VOLATILE. Unless required and for best performance, function should be IMMUTABLE or STABLE");
-
+		*/
 		/* prep function call data */
 		InitFunctionCallInfoData(arg->callback.ufc_info, &(arg->callback.ufl_info), arg->callback.ufl_info.fn_nargs, InvalidOid, NULL, NULL);
 
@@ -1137,7 +1176,7 @@ static int rtpg_nmapalgebraexpr_callback(
 	/* run prepared plan */
 	if (plan != NULL) {
 		Datum values[12];
-		bool nulls[12];
+		char nulls[12];
 		int err = 0;
 
 		TupleDesc tupdesc;
@@ -1150,7 +1189,7 @@ static int rtpg_nmapalgebraexpr_callback(
 
 		/* init values and nulls */
 		memset(values, (Datum) NULL, sizeof(Datum) * callback->kw.count);
-		memset(nulls, FALSE, sizeof(bool) * callback->kw.count);
+		memset(nulls, ' ', sizeof(char) * callback->kw.count);
 
 		if (callback->expr[id].spi_argcount) {
 			int idx = 0;
@@ -1176,7 +1215,7 @@ static int rtpg_nmapalgebraexpr_callback(
 						if (!arg->nodata[0][0][0])
 							values[idx] = Float8GetDatum(arg->values[0][0][0]);
 						else
-							nulls[idx] = TRUE;
+							nulls[idx] = 'n';
 						break;
 
 					/* [rast1.x] */
@@ -1194,7 +1233,7 @@ static int rtpg_nmapalgebraexpr_callback(
 						if (!arg->nodata[0][0][0])
 							values[idx] = Float8GetDatum(arg->values[0][0][0]);
 						else
-							nulls[idx] = TRUE;
+							nulls[idx] = 'n';
 						break;
 
 					/* [rast2.x] */
@@ -1212,7 +1251,7 @@ static int rtpg_nmapalgebraexpr_callback(
 						if (!arg->nodata[1][0][0])
 							values[idx] = Float8GetDatum(arg->values[1][0][0]);
 						else
-							nulls[idx] = TRUE;
+							nulls[idx] = 'n';
 						break;
 				}
 
@@ -2150,7 +2189,13 @@ Datum RASTER_union_transfn(PG_FUNCTION_ARGS)
 
 		/* if more than 2 arguments, determine the type of argument 3 */
 		/* band number, UNION type or unionarg */
-		if (!PG_ARGISNULL(2)) {
+		if (PG_ARGISNULL(2))
+		{
+			elog(ERROR, "RASTER_union_transfn: null input is not supported");
+			PG_RETURN_NULL();
+		}
+		else 
+		{
 			Oid calltype = get_fn_expr_argtype(fcinfo->flinfo, 2);
 
 			switch (calltype) {
@@ -2873,7 +2918,7 @@ Datum RASTER_union_finalfn(PG_FUNCTION_ARGS)
 
 	/* cleanup */
 	pfree(itrset);
-	rtpg_union_arg_destroy(iwr);
+	//rtpg_union_arg_destroy(iwr);
 
 	if (!_rtn) PG_RETURN_NULL();
 
@@ -4011,7 +4056,7 @@ rtpg_colormap_arg_init() {
 	arg->colormap->nentry = 0;
 	arg->colormap->entry = NULL;
 	arg->colormap->ncolor = 4; /* assume RGBA */
-	arg->colormap->method = CM_INTERPOLATE;
+	arg->colormap->method = arg->colormap->CM_INTERPOLATE;
 	arg->nodataentry = -1;
 
 	arg->entry = NULL;
@@ -4138,19 +4183,19 @@ Datum RASTER_colorMap(PG_FUNCTION_ARGS)
 		method = rtpg_strtoupper(method);
 
 		if (strcmp(method, "INTERPOLATE") == 0)
-			arg->colormap->method = CM_INTERPOLATE;
+			arg->colormap->method = arg->colormap->CM_INTERPOLATE;
 		else if (strcmp(method, "EXACT") == 0)
-			arg->colormap->method = CM_EXACT;
+			arg->colormap->method = arg->colormap->CM_EXACT;
 		else if (strcmp(method, "NEAREST") == 0)
-			arg->colormap->method = CM_NEAREST;
+			arg->colormap->method = arg->colormap->CM_NEAREST;
 		else {
 			elog(NOTICE, "Unknown value provided for method. Defaulting to INTERPOLATE");
-			arg->colormap->method = CM_INTERPOLATE;
+			arg->colormap->method = arg->colormap->CM_INTERPOLATE;
 		}
 	}
 	/* default to INTERPOLATE */
 	else
-		arg->colormap->method = CM_INTERPOLATE;
+		arg->colormap->method = arg->colormap->CM_INTERPOLATE;
 	POSTGIS_RT_DEBUGF(4, "method = %d", arg->colormap->method);
 
 	/* colormap (2) */
@@ -5293,8 +5338,9 @@ Datum RASTER_mapAlgebraFct(PG_FUNCTION_ARGS)
         elog(ERROR, "RASTER_mapAlgebraFct: Got invalid function object id. Returning NULL");
         PG_RETURN_NULL();
     }
+	fmgr_info(oid, &cbinfo);
 
-    fmgr_info(oid, &cbinfo);
+    
 
     /* function cannot return set */
     if (cbinfo.fn_retset) {
@@ -5321,10 +5367,34 @@ Datum RASTER_mapAlgebraFct(PG_FUNCTION_ARGS)
         k = 1;
     else
         k = 2;
-
+/*
     if (func_volatile(oid) == 'v') {
         elog(NOTICE, "Function provided is VOLATILE. Unless required and for best performance, function should be IMMUTABLE or STABLE");
     }
+*/
+	if (cbinfo.fn_nargs == 2)
+	{
+		Oid* argsType = (Oid*)palloc(sizeof(Oid) * 2);
+		argsType[0] = FLOAT8OID;
+		argsType[1] = INT4ARRAYOID;
+		if (function_args_consistent_check(oid, 2, argsType) == false)
+		{
+			 elog(ERROR, "RASTER_mapAlgebraFct: Parameters of userfunction are incorrect");
+		}
+		pfree(argsType);
+	}
+	else
+	{
+		Oid* argsType = (Oid*)palloc(sizeof(Oid) * 3);
+		argsType[0] = FLOAT8OID;
+		argsType[1] = INT4ARRAYOID;
+		argsType[2] = TEXTARRAYOID;
+		if (function_args_consistent_check(oid, 3, argsType) == false)
+		{
+			 elog(ERROR, "RASTER_mapAlgebraFct: Parameters of userfunction are incorrect");
+		}
+		pfree(argsType);
+	}
 
     /* prep function call data */
     InitFunctionCallInfoData(cbdata, &cbinfo, 2, InvalidOid, NULL, NULL);
@@ -5751,9 +5821,11 @@ Datum RASTER_mapAlgebraFctNgb(PG_FUNCTION_ARGS)
         PG_RETURN_NULL();
     }
 
+	/*
     if (func_volatile(oid) == 'v') {
         elog(NOTICE, "Function provided is VOLATILE. Unless required and for best performance, function should be IMMUTABLE or STABLE");
     }
+    */
 
     /* prep function call data */
 #if POSTGIS_PGSQL_VERSION <= 90
@@ -6121,7 +6193,7 @@ Datum RASTER_mapAlgebra2(PG_FUNCTION_ARGS)
 	uint8_t argpos[3][8] = {{0}};
 	char *argkw[] = {"[rast1.x]", "[rast1.y]", "[rast1.val]", "[rast1]", "[rast2.x]", "[rast2.y]", "[rast2.val]", "[rast2]"};
 	Datum values[argkwcount];
-	bool nulls[argkwcount];
+	char nulls[argkwcount];
 	TupleDesc tupdesc;
 	SPITupleTable *tuptable = NULL;
 	HeapTuple tuple;
@@ -6855,10 +6927,11 @@ Datum RASTER_mapAlgebra2(PG_FUNCTION_ARGS)
 						elog(ERROR, "RASTER_mapAlgebra2: Function provided must return double precision not resultset");
 					PG_RETURN_NULL();
 				}
-
+				/*
 				if (func_volatile(ufc_noid) == 'v') {
 					elog(NOTICE, "Function provided is VOLATILE. Unless required and for best performance, function should be IMMUTABLE or STABLE");
 				}
+				*/
 
 				/* prep function call data */
 #if POSTGIS_PGSQL_VERSION <= 90
@@ -7008,7 +7081,7 @@ Datum RASTER_mapAlgebra2(PG_FUNCTION_ARGS)
 								/* reset values to (Datum) NULL */
 								memset(values, (Datum) NULL, sizeof(Datum) * argkwcount);
 								/* reset nulls to FALSE */
-								memset(nulls, FALSE, sizeof(bool) * argkwcount);
+								memset(nulls, ' ', sizeof(char) * argkwcount);
 
 								/* set values and nulls */
 								for (j = 0; j < argkwcount; j++) {
@@ -7027,7 +7100,7 @@ Datum RASTER_mapAlgebra2(PG_FUNCTION_ARGS)
 										(strstr(argkw[j], "[rast1]") != NULL)
 									) {
 										if (_isempty[0] || !_haspixel[0])
-											nulls[idx] = TRUE;
+											nulls[idx] = 'n';
 										else
 											values[idx] = Float8GetDatum(_pixel[0]);
 									}
@@ -7042,7 +7115,7 @@ Datum RASTER_mapAlgebra2(PG_FUNCTION_ARGS)
 										(strstr(argkw[j], "[rast2]") != NULL)
 									) {
 										if (_isempty[1] || !_haspixel[1])
-											nulls[idx] = TRUE;
+											nulls[idx] = 'n';
 										else
 											values[idx] = Float8GetDatum(_pixel[1]);
 									}

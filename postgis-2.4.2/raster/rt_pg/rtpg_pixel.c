@@ -27,41 +27,45 @@
  *
  */
 
-#include <postgres.h>
-#include <fmgr.h>
-#include "utils/lsyscache.h" /* for get_typlenbyvalalign */
-#include <funcapi.h>
-#include "utils/array.h" /* for ArrayType */
-#include "catalog/pg_type.h" /* for INT2OID, INT4OID, FLOAT4OID, FLOAT8OID and TEXTOID */
+//#include <postgres.h>
+//#include <fmgr.h>
+//#include "utils/lsyscache.h" /* for get_typlenbyvalalign */
+//#include <funcapi.h>
+//#include "utils/array.h" /* for ArrayType */
+//#include "catalog/pg_type.h" /* for INT2OID, INT4OID, FLOAT4OID, FLOAT8OID and TEXTOID */
+
+#include "extension_dependency.h"
 
 #include "../../postgis_config.h"
 #include "lwgeom_pg.h"
 
 
 
-#include "access/htup_details.h" /* for heap_form_tuple() */
+//#include "access/htup_details.h" /* for heap_form_tuple() */
 
 
 #include "rtpostgis.h"
 
 /* Get pixel value */
-Datum RASTER_getPixelValue(PG_FUNCTION_ARGS);
-Datum RASTER_dumpValues(PG_FUNCTION_ARGS);
+extern "C"
+{
+	Datum RASTER_getPixelValue(PG_FUNCTION_ARGS);
+	Datum RASTER_dumpValues(PG_FUNCTION_ARGS);
 
-/* Set pixel value(s) */
-Datum RASTER_setPixelValue(PG_FUNCTION_ARGS);
-Datum RASTER_setPixelValuesArray(PG_FUNCTION_ARGS);
-Datum RASTER_setPixelValuesGeomval(PG_FUNCTION_ARGS);
+	/* Set pixel value(s) */
+	Datum RASTER_setPixelValue(PG_FUNCTION_ARGS);
+	Datum RASTER_setPixelValuesArray(PG_FUNCTION_ARGS);
+	Datum RASTER_setPixelValuesGeomval(PG_FUNCTION_ARGS);
 
-/* Get pixels of value */
-Datum RASTER_pixelOfValue(PG_FUNCTION_ARGS);
+	/* Get pixels of value */
+	Datum RASTER_pixelOfValue(PG_FUNCTION_ARGS);
 
-/* Get nearest value to a point */
-Datum RASTER_nearestValue(PG_FUNCTION_ARGS);
+	/* Get nearest value to a point */
+	Datum RASTER_nearestValue(PG_FUNCTION_ARGS);
 
-/* Get the neighborhood around a pixel */
-Datum RASTER_neighborhood(PG_FUNCTION_ARGS);
-
+	/* Get the neighborhood around a pixel */
+	Datum RASTER_neighborhood(PG_FUNCTION_ARGS);
+}
 /**
  * Return value of a single pixel.
  * Pixel location is specified by 1-based index of Nth band of raster and
@@ -83,16 +87,28 @@ Datum RASTER_getPixelValue(PG_FUNCTION_ARGS)
     bool exclude_nodata_value = TRUE;
 		int isnodata = 0;
 
-    /* Index is 1-based */
-    bandindex = PG_GETARG_INT32(1);
+	if (PG_ARGISNULL(1)) {
+		elog(ERROR, "The input cannot be NULL.");
+	} else {
+		bandindex = PG_GETARG_INT32(1);
+	}
+
     if ( bandindex < 1 ) {
         elog(NOTICE, "Invalid band index (must use 1-based). Returning NULL");
         PG_RETURN_NULL();
     }
 
-    x = PG_GETARG_INT32(2);
+	if (PG_ARGISNULL(2)) {
+		elog(ERROR, "The input cannot be NULL.");
+	} else {
+		x = PG_GETARG_INT32(2);
+	}
 
-    y = PG_GETARG_INT32(3);
+	if (PG_ARGISNULL(3)) {
+		elog(ERROR, "The input cannot be NULL.");
+	} else {
+		y = PG_GETARG_INT32(3);
+	}	
 
     exclude_nodata_value = PG_GETARG_BOOL(4);
 
@@ -1680,7 +1696,12 @@ Datum RASTER_pixelOfValue(PG_FUNCTION_ARGS)
 		}
 
 		/* search values */
-		array = PG_GETARG_ARRAYTYPE_P(2);
+		if (PG_ARGISNULL(2)) {
+			PG_RETURN_NULL();	
+		} else {
+			array = PG_GETARG_ARRAYTYPE_P(2);
+		}
+
 		etype = ARR_ELEMTYPE(array);
 		get_typlenbyvalalign(etype, &typlen, &typbyval, &typalign);
 
@@ -1876,7 +1897,12 @@ Datum RASTER_nearestValue(PG_FUNCTION_ARGS)
 	}
 
 	/* point */
-	geom = PG_GETARG_GSERIALIZED_P(2);
+	if (PG_ARGISNULL(2)) {
+		PG_RETURN_NULL();	
+	} else {
+		geom = PG_GETARG_GSERIALIZED_P(2);
+	}
+
 	if (gserialized_get_type(geom) != POINTTYPE) {
 		elog(NOTICE, "Geometry provided must be a point");
 		rt_raster_destroy(raster);
@@ -2102,15 +2128,28 @@ Datum RASTER_neighborhood(PG_FUNCTION_ARGS)
 	}
 
 	/* pixel column, 1-based */
-	x = PG_GETARG_INT32(2);
-	_x = x - 1;
+	if (PG_ARGISNULL(2)) {
+		PG_RETURN_NULL();
+	} else {
+		x = PG_GETARG_INT32(2);
+		_x = x - 1;
+	}
 
 	/* pixel row, 1-based */
-	y = PG_GETARG_INT32(3);
-	_y = y - 1;
+	if (PG_ARGISNULL(3)) {
+		PG_RETURN_NULL();
+	} else {
+		y = PG_GETARG_INT32(3);
+		_y = y - 1;
+	}
 
 	/* distance X axis */
-	distance[0] = PG_GETARG_INT32(4);
+	if (PG_ARGISNULL(4)) {
+		PG_RETURN_NULL();
+	} else {
+		distance[0] = PG_GETARG_INT32(4);
+	}
+
 	if (distance[0] < 0) {
 		elog(NOTICE, "Invalid value for distancex (must be >= zero). Returning NULL");
 		rt_raster_destroy(raster);
@@ -2120,7 +2159,12 @@ Datum RASTER_neighborhood(PG_FUNCTION_ARGS)
 	distance[0] = (uint16_t) distance[0];
 
 	/* distance Y axis */
-	distance[1] = PG_GETARG_INT32(5);
+	if (PG_ARGISNULL(5)) {
+		PG_RETURN_NULL();
+	} else {
+		distance[1] = PG_GETARG_INT32(5);
+	}
+
 	if (distance[1] < 0) {
 		elog(NOTICE, "Invalid value for distancey (must be >= zero). Returning NULL");
 		rt_raster_destroy(raster);

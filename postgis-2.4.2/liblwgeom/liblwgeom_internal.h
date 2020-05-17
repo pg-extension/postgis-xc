@@ -460,8 +460,8 @@ extern void trim_trailing_zeros(char *num);
 
 extern uint8_t MULTITYPE[NUMTYPES];
 
-extern lwinterrupt_callback *_lwgeom_interrupt_callback;
-extern int _lwgeom_interrupt_requested;
+extern THR_LOCAL lwinterrupt_callback *_lwgeom_interrupt_callback;
+extern THR_LOCAL int _lwgeom_interrupt_requested;
 #define LW_ON_INTERRUPT(x) { \
   if ( _lwgeom_interrupt_callback ) { \
     (*_lwgeom_interrupt_callback)(); \

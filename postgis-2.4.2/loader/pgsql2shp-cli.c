@@ -130,7 +130,7 @@ main(int argc, char **argv)
 	config = malloc(sizeof(SHPDUMPERCONFIG));
 	set_dumper_config_defaults(config);
 
-	while ((c = 'b') != EOF)
+	while ((c = pgis_getopt(argc, argv, "bf:h:du:p:P:g:rkm:")) != EOF)
 	{
 		switch (c)
 		{

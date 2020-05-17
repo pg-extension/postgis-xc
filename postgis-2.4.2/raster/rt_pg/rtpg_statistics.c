@@ -28,41 +28,45 @@
  *
  */
 
-#include <postgres.h>
-#include <fmgr.h>
-#include <utils/builtins.h> /* for text_to_cstring() */
-#include "utils/lsyscache.h" /* for get_typlenbyvalalign */
-#include "utils/array.h" /* for ArrayType */
-#include "catalog/pg_type.h" /* for INT2OID, INT4OID, FLOAT4OID, FLOAT8OID and TEXTOID */
-#include <executor/spi.h>
-#include <funcapi.h> /* for SRF */
+//#include <postgres.h>
+//#include <fmgr.h>
+//#include <utils/builtins.h> /* for text_to_cstring() */
+//#include "utils/lsyscache.h" /* for get_typlenbyvalalign */
+//#include "utils/array.h" /* for ArrayType */
+//#include "catalog/pg_type.h" /* for INT2OID, INT4OID, FLOAT4OID, FLOAT8OID and TEXTOID */
+//#include <executor/spi.h>
+//#include <funcapi.h> /* for SRF */
 
 #include "../../postgis_config.h"
+#include "extension_dependency.h"
 
 
-#include "access/htup_details.h" /* for heap_form_tuple() */
+//#include "access/htup_details.h" /* for heap_form_tuple() */
 
 
 #include "rtpostgis.h"
 
 /* Get summary stats */
-Datum RASTER_summaryStats(PG_FUNCTION_ARGS);
-Datum RASTER_summaryStatsCoverage(PG_FUNCTION_ARGS);
+extern "C"
+{
+	Datum RASTER_summaryStats(PG_FUNCTION_ARGS);
+	Datum RASTER_summaryStatsCoverage(PG_FUNCTION_ARGS);
 
-Datum RASTER_summaryStats_transfn(PG_FUNCTION_ARGS);
-Datum RASTER_summaryStats_finalfn(PG_FUNCTION_ARGS);
+	Datum RASTER_summaryStats_transfn(PG_FUNCTION_ARGS);
+	Datum RASTER_summaryStats_finalfn(PG_FUNCTION_ARGS);
 
-/* get histogram */
-Datum RASTER_histogram(PG_FUNCTION_ARGS);
-Datum RASTER_histogramCoverage(PG_FUNCTION_ARGS);
+	/* get histogram */
+	Datum RASTER_histogram(PG_FUNCTION_ARGS);
+	Datum RASTER_histogramCoverage(PG_FUNCTION_ARGS);
 
-/* get quantiles */
-Datum RASTER_quantile(PG_FUNCTION_ARGS);
-Datum RASTER_quantileCoverage(PG_FUNCTION_ARGS);
+	/* get quantiles */
+	Datum RASTER_quantile(PG_FUNCTION_ARGS);
+	Datum RASTER_quantileCoverage(PG_FUNCTION_ARGS);
 
-/* get counts of values */
-Datum RASTER_valueCount(PG_FUNCTION_ARGS);
-Datum RASTER_valueCountCoverage(PG_FUNCTION_ARGS);
+	/* get counts of values */
+	Datum RASTER_valueCount(PG_FUNCTION_ARGS);
+	Datum RASTER_valueCountCoverage(PG_FUNCTION_ARGS);
+}
 
 /**
  * Get summary stats of a band
@@ -907,7 +911,7 @@ Datum RASTER_summaryStats_finalfn(PG_FUNCTION_ARGS)
 	result = HeapTupleGetDatum(tuple);
 
 	/* clean up */
-	rtpg_summarystats_arg_destroy(state);
+	//rtpg_summarystats_arg_destroy(state);
 
 	PG_RETURN_DATUM(result);
 }
@@ -1143,7 +1147,6 @@ Datum RASTER_histogram(PG_FUNCTION_ARGS)
 
 		BlessTupleDesc(tupdesc);
 		funcctx->tuple_desc = tupdesc;
-
 		MemoryContextSwitchTo(oldcontext);
 	}
 
@@ -3039,7 +3042,9 @@ Datum RASTER_valueCountCoverage(PG_FUNCTION_ARGS) {
 	}
 	/* do when there is no more left */
 	else {
-		pfree(covvcnts2);
+		if (covvcnts2 != NULL) {
+			pfree(covvcnts2);
+		}
 		SRF_RETURN_DONE(funcctx);
 	}
 }

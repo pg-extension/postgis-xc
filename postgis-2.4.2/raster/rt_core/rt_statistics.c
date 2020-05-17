@@ -146,7 +146,10 @@ rt_band_get_summary_stats(
 	start = clock();
 #endif
 
-	assert(NULL != band);
+	//assert(NULL != band);
+	if (NULL == band) {
+		rterror("rt_band_get_summary_stats: band cannot be NULL");
+	}
 
 	/* band is empty (width < 1 || height < 1) */
 	if (band->width < 1 || band->height < 1) {
@@ -268,6 +271,7 @@ rt_band_get_summary_stats(
 	stats->min = stats->max = 0;
 	stats->values = NULL;
 	stats->sorted = 0;
+	int values_size = sample_size;
 
 	for (x = 0, j = 0, k = 0; x < band->width; x++) {
 		y = -1;
@@ -294,6 +298,10 @@ rt_band_get_summary_stats(
 
 				/* average */
 				k++;
+				if (k == values_size) {
+					values = rtrealloc(values, 2 * k * sizeof(double));
+					values_size *= 2;
+				}
 				sum += value;
 
 				/*
@@ -435,8 +443,14 @@ rt_band_get_histogram(
 	start = clock();
 #endif
 
-	assert(NULL != stats);
-	assert(NULL != rtn_count);
+	//assert(NULL != stats);
+	//assert(NULL != rtn_count);
+	if (NULL == stats) {
+		rterror("rt_band_get_histogram: stats cannot be NULL");
+	}
+	if (NULL == rtn_count) {
+		rterror("rt_band_get_histogram: rtn_count cannot be NULL");
+	}
 
 	if (stats->count < 1 || NULL == stats->values) {
 		rterror("rt_util_get_histogram: rt_bandstats object has no value");
@@ -542,7 +556,7 @@ rt_band_get_histogram(
 	}
 
 	/* initialize bins */
-	bins = rtalloc(bin_count * sizeof(struct rt_histogram_t));
+	bins = rtalloc((bin_count + 1) * sizeof(struct rt_histogram_t));
 	if (NULL == bins) {
 		rterror("rt_util_get_histogram: Could not allocate memory for histogram");
 		if (init_width) rtdealloc(bin_width);
@@ -573,8 +587,11 @@ rt_band_get_histogram(
 				bins[i].inc_min = 0;
 				bins[i].inc_max = 1;
 			}
-
 			i++;
+			if (i == bin_count) {
+				break;
+			}
+				
 		}
 	}
 	if (!right) {
@@ -690,8 +707,14 @@ rt_band_get_quantiles(
 	start = clock();
 #endif
 
-	assert(NULL != stats);
-	assert(NULL != rtn_count);
+	//assert(NULL != stats);
+	//assert(NULL != rtn_count);
+	if (NULL == stats) {
+		rterror("rt_band_get_quantiles: stats cannot be NULL");
+	}
+	if (NULL == rtn_count) {
+		rterror("rt_band_get_quantiles: rtn_count cannot be NULL");
+	}
 
 	if (stats->count < 1 || NULL == stats->values) {
 		rterror("rt_band_get_quantiles: rt_bandstats object has no value");
@@ -1047,9 +1070,19 @@ rt_band_get_quantiles_stream(
 
 	RASTER_DEBUG(3, "starting");
 
-	assert(NULL != band);
-	assert(cov_count > 1);
-	assert(NULL != rtn_count);
+	//assert(NULL != band);
+	//assert(cov_count > 1);
+	//assert(NULL != rtn_count);
+	if (NULL == band) {
+		rterror("rt_band_get_quantiles_stream: band cannot be NULL");
+	}
+	if (NULL == rtn_count) {
+		rterror("rt_band_get_quantiles_stream: rtn_count cannot be NULL");
+	}
+	if (cov_count <= 1) {
+		rterror("rt_band_get_quantiles_stream: cov_count must bigger than 1.");
+	}
+
 	RASTER_DEBUGF(3, "cov_count = %d", cov_count);
 
 	data = rt_band_get_data(band);
@@ -1640,8 +1673,14 @@ rt_band_get_value_count(
 	start = clock();
 #endif
 
-	assert(NULL != band);
-	assert(NULL != rtn_count);
+	//assert(NULL != band);
+	//assert(NULL != rtn_count);
+	if (NULL == band) {
+		rterror("rt_band_get_value_count: band cannot be NULL");
+	}
+	if (NULL == rtn_count) {
+		rterror("rt_band_get_value_count: rtn_count cannot be NULL");
+	}
 
 	data = rt_band_get_data(band);
 	if (data == NULL) {

@@ -36,10 +36,12 @@
 
 #include "rtpostgis.h"
 
-Datum RASTER_lib_version(PG_FUNCTION_ARGS);
-Datum RASTER_lib_build_date(PG_FUNCTION_ARGS);
-Datum RASTER_gdal_version(PG_FUNCTION_ARGS);
-Datum RASTER_minPossibleValue(PG_FUNCTION_ARGS);
+extern "C" {
+	Datum RASTER_lib_version(PG_FUNCTION_ARGS);
+	Datum RASTER_lib_build_date(PG_FUNCTION_ARGS);
+	Datum RASTER_gdal_version(PG_FUNCTION_ARGS);
+	Datum RASTER_minPossibleValue(PG_FUNCTION_ARGS);
+}
 
 PG_FUNCTION_INFO_V1(RASTER_lib_version);
 Datum RASTER_lib_version(PG_FUNCTION_ARGS)
@@ -47,7 +49,7 @@ Datum RASTER_lib_version(PG_FUNCTION_ARGS)
     char ver[64];
     text *result;
 
-    snprintf(ver, 64, "%s r%d", POSTGIS_LIB_VERSION, POSTGIS_SVN_REVISION);
+    snprintf(ver, 64, "%s r2.1.1", POSTGIS_LIB_VERSION);
     ver[63] = '\0';
 
     result = cstring2text(ver);
@@ -74,11 +76,11 @@ Datum RASTER_gdal_version(PG_FUNCTION_ARGS)
 	/* add indicator if GDAL isn't configured right */
 	if (!rt_util_gdal_configured()) {
 		char *rtn = NULL;
-		rtn = palloc(strlen(ver) + strlen(" GDAL_DATA not found") + 1);
+		rtn = palloc(strlen(ver) + 1);
 		if (!rtn)
 			result = cstring2text(ver);
 		else {
-			sprintf(rtn, "%s GDAL_DATA not found", ver);
+			sprintf(rtn, "%s", ver);
 			result = cstring2text(rtn);
 			pfree(rtn);
 		}
@@ -133,7 +135,10 @@ Datum RASTER_minPossibleValue(PG_FUNCTION_ARGS)
 }
 
 /** find the detoasted size of a value */
-Datum RASTER_memsize(PG_FUNCTION_ARGS);
+extern "C" {
+	Datum RASTER_memsize(PG_FUNCTION_ARGS);
+}
+
 PG_FUNCTION_INFO_V1(RASTER_memsize);
 Datum RASTER_memsize(PG_FUNCTION_ARGS)
 {

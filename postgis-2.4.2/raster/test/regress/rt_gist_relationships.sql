@@ -19,43 +19,40 @@
 
 CREATE TYPE tile AS (x int, y int, tile raster);
 CREATE OR REPLACE FUNCTION makegrid (int, int, box2d, int, int)
-    RETURNS SETOF tile
-AS
-'
+    RETURNS SETOF tile 
+AS $$
 DECLARE
-    gridCols alias for $1;
-    gridRows alias for $2;
-    extent alias for $3;
-    tileWidth alias for $4;
-    tileHeight alias for $5;
-    rec tile;
-    scalex float8;
-    scaley float8;
-    ipx float8;
-    ipy float8;
+    gridCols alias for $1; 
+    gridRows alias for $2; 
+    extent alias for $3; 
+    tileWidth alias for $4; 
+    tileHeight alias for $5; 
+    rec tile; 
+    scalex float8; 
+    scaley float8; 
+    ipx float8; 
+    ipy float8; 
 BEGIN
 	
     -- compute some sizes
     -- each tile extent width is extent.width / gridRows
     scalex = ((ST_xmax(extent)-ST_xmin(extent))/gridCols)/tileWidth;
     scaley = ((ST_ymax(extent)-ST_ymin(extent))/gridRows)/tileHeight;
-
-    FOR y IN 0..gridRows-1 LOOP
-        ipy = y*scaley + ST_ymin(extent);
-        FOR x IN 0..gridCols-1 LOOP
-            ipx = x*scalex + ST_xmin(extent);
+	FOR y IN 0..gridRows-1 LOOP 
+        ipy = y*scaley + ST_ymin(extent); 
+        FOR x IN 0..gridCols-1 LOOP 
+            ipx = x*scalex + ST_xmin(extent); 
             rec.x = x;
             rec.y = y;
             rec.tile = st_MakeEmptyRaster(tileWidth, tileHeight, ipx, ipy,
                                           scalex, scaley, 0, 0);
-            RETURN NEXT rec;
-        END LOOP;
-    END LOOP;
+            RETURN NEXT rec; 
+        END LOOP; 
+    END LOOP; 
 
-    RETURN;
-END;
-'
-LANGUAGE 'plpgsql';
+	RETURN; 
+END; 
+$$ LANGUAGE 'plpgsql'; 
 
 CREATE TABLE rt_gist_grid_test AS
     SELECT * FROM makegrid(10, 10, 'BOX(-100 -100, 100 100)', 1, 1);

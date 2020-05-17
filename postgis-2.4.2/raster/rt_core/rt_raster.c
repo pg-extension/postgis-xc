@@ -33,6 +33,7 @@
 
 #include <math.h>
 
+
 /**
  * Construct a raster with given dimensions.
  *
@@ -120,15 +121,20 @@ _rt_raster_geotransform_warn_offline_band(rt_raster raster) {
 uint16_t
 rt_raster_get_width(rt_raster raster) {
 
-    assert(NULL != raster);
-
+    //assert(NULL != raster);
+	if (NULL == raster) {
+		rterror("rt_raster_get_width: raster cannot be null.");
+	}
     return raster->width;
 }
 
 uint16_t
 rt_raster_get_height(rt_raster raster) {
 
-    assert(NULL != raster);
+    //assert(NULL != raster);
+	if (NULL == raster) {
+		rterror("rt_raster_get_height: raster cannot be null.");
+	}
 
     return raster->height;
 }
@@ -138,7 +144,10 @@ rt_raster_set_scale(
 	rt_raster raster,
 	double scaleX, double scaleY
 ) {
-	assert(NULL != raster);
+	//assert(NULL != raster);
+	if (NULL == raster) {
+		rterror("rt_raster_set_scale: raster cannot be null.");
+	}
 
 	raster->scaleX = scaleX;
 	raster->scaleY = scaleY;
@@ -150,7 +159,10 @@ double
 rt_raster_get_x_scale(rt_raster raster) {
 
 
-    assert(NULL != raster);
+    //assert(NULL != raster);
+	if (NULL == raster) {
+		rterror("rt_raster_get_x_scale: raster cannot be null.");
+	}
 
     return raster->scaleX;
 }
@@ -159,7 +171,10 @@ double
 rt_raster_get_y_scale(rt_raster raster) {
 
 
-    assert(NULL != raster);
+    //assert(NULL != raster);
+	if (NULL == raster) {
+		rterror("rt_raster_get_y_scale: raster cannot be null.");
+	}
 
     return raster->scaleY;
 }
@@ -169,7 +184,10 @@ rt_raster_set_skews(
 	rt_raster raster,
 	double skewX, double skewY
 ) {
-	assert(NULL != raster);
+	//assert(NULL != raster);
+	if (NULL == raster) {
+		rterror("rt_raster_set_skews: raster cannot be null.");
+	}
 
 	raster->skewX = skewX;
 	raster->skewY = skewY;
@@ -181,7 +199,10 @@ double
 rt_raster_get_x_skew(rt_raster raster) {
 
 
-    assert(NULL != raster);
+    //assert(NULL != raster);
+    if (NULL == raster) {
+		rterror("rt_raster_get_x_skew: raster cannot be null.");
+	}
 
     return raster->skewX;
 }
@@ -190,7 +211,10 @@ double
 rt_raster_get_y_skew(rt_raster raster) {
 
 
-    assert(NULL != raster);
+    //assert(NULL != raster);
+    if (NULL == raster) {
+		rterror("rt_raster_get_y_skew: raster cannot be null.");
+	}
 
     return raster->skewY;
 }
@@ -201,7 +225,10 @@ rt_raster_set_offsets(
 	double x, double y
 ) {
 
-	assert(NULL != raster);
+	//assert(NULL != raster);
+	if (NULL == raster) {
+		rterror("rt_raster_set_offsets: raster cannot be null.");
+	}
 
 	raster->ipX = x;
 	raster->ipY = y;
@@ -213,7 +240,10 @@ double
 rt_raster_get_x_offset(rt_raster raster) {
 
 
-    assert(NULL != raster);
+    //assert(NULL != raster);
+    if (NULL == raster) {
+		rterror("rt_raster_get_x_offset: raster cannot be null.");
+	}
 
     return raster->ipX;
 }
@@ -222,7 +252,10 @@ double
 rt_raster_get_y_offset(rt_raster raster) {
 
 
-    assert(NULL != raster);
+    //assert(NULL != raster);
+    if (NULL == raster) {
+		rterror("rt_raster_get_y_offset: raster cannot be null.");
+	}
 
     return raster->ipY;
 }
@@ -354,14 +387,20 @@ rt_raster_calc_gt_coeff(double i_mag, double j_mag, double theta_i, double theta
 
 int32_t
 rt_raster_get_srid(rt_raster raster) {
-	assert(NULL != raster);
+	//assert(NULL != raster);
+	if (NULL == raster) {
+		rterror("rt_raster_get_srid: raster cannot be null.");
+	}
 
 	return clamp_srid(raster->srid);
 }
 
 void
 rt_raster_set_srid(rt_raster raster, int32_t srid) {
-	assert(NULL != raster);
+	//assert(NULL != raster);
+	if (NULL == raster) {
+		rterror("rt_raster_set_srid: raster cannot be null.");
+	}
 
 	raster->srid = clamp_srid(srid);
 
@@ -372,14 +411,20 @@ int
 rt_raster_get_num_bands(rt_raster raster) {
 
 
-    assert(NULL != raster);
+    //assert(NULL != raster);
+    if (NULL == raster) {
+		rterror("rt_raster_get_num_bands: raster cannot be null.");
+	}
 
     return raster->numBands;
 }
 
 rt_band
 rt_raster_get_band(rt_raster raster, int n) {
-	assert(NULL != raster);
+	//assert(NULL != raster);
+    if (NULL == raster) {
+		rterror("rt_raster_get_band: raster cannot be null.");
+	}
 
 	if (n >= raster->numBands || n < 0)
 		return NULL;
@@ -408,8 +453,14 @@ rt_raster_add_band(rt_raster raster, rt_band band, int index) {
     rt_band tmpband = NULL;
     uint16_t i = 0;
 
-    assert(NULL != raster);
-		assert(NULL != band);
+    //assert(NULL != raster);
+	//assert(NULL != band);
+	if (NULL == raster) {
+		rterror("rt_raster_add_band: raster cannot be null.");
+	}
+	if (NULL == band) {
+		rterror("rt_raster_add_band: band cannot be null.");
+	}
 
     RASTER_DEBUGF(3, "Adding band %p to raster %p", band, raster);
 
@@ -502,7 +553,10 @@ rt_raster_generate_new_band(
     int i;
 
 
-    assert(NULL != raster);
+    //assert(NULL != raster);
+	if (NULL == raster) {
+		rterror("rt_raster_generate_new_band: raster cannot be null.");
+	}
 
     /* Make sure index is in a valid range */
     oldnumbands = rt_raster_get_num_bands(raster);
@@ -679,8 +733,16 @@ rt_errorstate rt_raster_get_inverse_geotransform_matrix(
 ) {
 	double _gt[6] = {0};
 
-	assert((raster != NULL || gt != NULL));
-	assert(igt != NULL);
+	//assert((raster != NULL || gt != NULL));
+	//assert(igt != NULL);
+
+	if (NULL == raster && NULL == gt) {
+		rterror("rt_raster_get_inverse_geotransform_matrix: raster and gt cannot be null at the same time.");
+	}
+
+	if (NULL == igt) {
+		rterror("rt_raster_get_inverse_geotransform_matrix: igt cannot be null at the same time.");
+	}
 
 	if (gt == NULL)
 		rt_raster_get_geotransform_matrix(raster, _gt);
@@ -705,8 +767,16 @@ rt_errorstate rt_raster_get_inverse_geotransform_matrix(
 void
 rt_raster_get_geotransform_matrix(rt_raster raster,
 	double *gt) {
-	assert(NULL != raster);
-	assert(NULL != gt);
+	//assert(NULL != raster);
+	//assert(NULL != gt);
+
+	if (NULL == raster) {
+		rterror("rt_raster_get_geotransform_matrix: raster cannot be null.");
+	}
+
+	if (NULL == gt) {
+		rterror("rt_raster_get_geotransform_matrix: gt cannot be null.");
+	}
 
 	gt[0] = raster->ipX;
 	gt[1] = raster->scaleX;
@@ -726,8 +796,15 @@ rt_raster_get_geotransform_matrix(rt_raster raster,
 void
 rt_raster_set_geotransform_matrix(rt_raster raster,
 	double *gt) {
-	assert(NULL != raster);
-	assert(NULL != gt);
+	//assert(NULL != raster);
+	//assert(NULL != gt);
+	if (NULL == raster) {
+		rterror("rt_raster_set_geotransform_matrix: raster cannot be null.");
+	}
+
+	if (NULL == gt) {
+		rterror("rt_raster_set_geotransform_matrix: gt cannot be null.");
+	}
 
 	raster->ipX = gt[0];
 	raster->scaleX = gt[1];
@@ -760,8 +837,16 @@ rt_raster_cell_to_geopoint(
 ) {
 	double _gt[6] = {0};
 
-	assert(NULL != raster);
-	assert(NULL != xw && NULL != yw);
+	//assert(NULL != raster);
+	//assert(NULL != xw && NULL != yw);
+
+	if (NULL == raster) {
+		rterror("rt_raster_cell_to_geopoint: raster cannot be null.");
+	}
+
+	if (NULL == xw || NULL == yw) {
+		rterror("rt_raster_cell_to_geopoint: xw and yw cannot be null.");
+	}
 
 	if (NULL != gt)
 		memcpy(_gt, gt, sizeof(double) * 6);
@@ -812,8 +897,16 @@ rt_raster_geopoint_to_cell(
 	double _igt[6] = {0};
 	double rnd = 0;
 
-	assert(NULL != raster);
-	assert(NULL != xr && NULL != yr);
+	//assert(NULL != raster);
+	//assert(NULL != xr && NULL != yr);
+
+	if (NULL == raster) {
+		rterror("rt_raster_geopoint_to_cell: raster cannot be null.");
+	}
+
+	if (NULL == xr || NULL == yr) {
+		rterror("rt_raster_geopoint_to_cell: xr and yr cannot be null.");
+	}
 
 	if (igt != NULL)
 		memcpy(_igt, igt, sizeof(double) * 6);
@@ -881,8 +974,16 @@ rt_raster_get_envelope(
 	double _w[2] = {0.};
 	double _gt[6] = {0.};
 
-	assert(raster != NULL);
-	assert(env != NULL);
+	//assert(raster != NULL);
+	//assert(env != NULL);
+
+	if (NULL == raster) {
+		rterror("rt_raster_get_envelope: raster cannot be null.");
+	}
+
+	if (NULL == env) {
+		rterror("rt_raster_get_envelope: env cannot be null.");
+	}
 
 	rt_raster_get_geotransform_matrix(raster, _gt);
 
@@ -1378,8 +1479,16 @@ rt_raster_copy_band(
 	rt_band srcband = NULL;
 	rt_band dstband = NULL;
 
-	assert(NULL != torast);
-	assert(NULL != fromrast);
+	//assert(NULL != torast);
+	//assert(NULL != fromrast);
+
+	if (NULL == torast) {
+		rterror("rt_raster_copy_band: torast cannot be null.");
+	}
+
+	if (NULL == fromrast) {
+		rterror("rt_raster_copy_band: fromrast cannot be null.");
+	}
 
 	/* Check raster dimensions */
 	if (torast->height != fromrast->height || torast->width != fromrast->width) {
@@ -1444,8 +1553,16 @@ rt_raster_from_band(rt_raster raster, uint32_t *bandNums, int count) {
 	int32_t flag;
 	double gt[6] = {0.};
 
-	assert(NULL != raster);
-	assert(NULL != bandNums);
+	//assert(NULL != raster);
+	//assert(NULL != bandNums);
+
+	if (NULL == raster) {
+		rterror("rt_raster_from_band: raster cannot be null.");
+	}
+
+	if (NULL == bandNums) {
+		rterror("rt_raster_from_band: bandNums cannot be null.");
+	}
 
 	RASTER_DEBUGF(3, "rt_raster_from_band: source raster has %d bands",
 		rt_raster_get_num_bands(raster));
@@ -1501,8 +1618,16 @@ rt_raster_from_band(rt_raster raster, uint32_t *bandNums, int count) {
 rt_band
 rt_raster_replace_band(rt_raster raster, rt_band band, int index) {
 	rt_band oldband = NULL;
-	assert(NULL != raster);
-	assert(NULL != band);
+	//assert(NULL != raster);
+	//assert(NULL != band);
+
+	if (NULL == raster) {
+		rterror("rt_raster_replace_band: raster cannot be null.");
+	}
+
+	if (NULL == band) {
+		rterror("rt_raster_replace_band: band cannot be null.");
+	}
 
 	if (band->width != raster->width || band->height != raster->height) {
 		rterror("rt_raster_replace_band: Band does not match raster's dimensions: %dx%d band to %dx%d raster",
@@ -1545,7 +1670,11 @@ rt_raster_clone(rt_raster raster, uint8_t deep) {
 	rt_raster rtn = NULL;
 	double gt[6] = {0};
 
-	assert(NULL != raster);
+	//assert(NULL != raster);
+
+	if (NULL == raster) {
+		rterror("rt_raster_clone: raster cannot be null.");
+	}
 
 	if (deep) {
 		int numband = rt_raster_get_num_bands(raster);
@@ -1614,8 +1743,16 @@ rt_raster_to_gdal(
 	GDALDatasetH rtn_ds = NULL;
 	uint8_t *rtn = NULL;
 
-	assert(NULL != raster);
-	assert(NULL != gdalsize);
+	//assert(NULL != raster);
+	//assert(NULL != gdalsize);
+
+	if (NULL == raster) {
+		rterror("rt_raster_to_gdal: raster cannot be null.");
+	}
+
+	if (NULL == gdalsize) {
+		rterror("rt_raster_to_gdal: gdalsize cannot be null.");
+	}
 
 	/* any supported format is possible */
 	rt_util_gdal_register_all(0);
@@ -1712,7 +1849,11 @@ rt_raster_gdal_drivers(uint32_t *drv_count, uint8_t cancc) {
 	int i;
 	uint32_t j;
 
-	assert(drv_count != NULL);
+	//assert(drv_count != NULL);
+	
+	if (NULL == drv_count) {
+		rterror("rt_raster_gdal_drivers: drv_count cannot be null.");
+	}
 
 	rt_util_gdal_register_all(0);
 	count = GDALGetDriverCount();
@@ -1835,9 +1976,21 @@ rt_raster_to_gdal_mem(
 	rt_band rtband = NULL;
 	rt_pixtype pt = PT_END;
 
-	assert(NULL != raster);
-	assert(NULL != rtn_drv);
-	assert(NULL != destroy_rtn_drv);
+	//assert(NULL != raster);
+	//assert(NULL != rtn_drv);
+	//assert(NULL != destroy_rtn_drv);
+
+	if (NULL == raster) {
+		rterror("rt_raster_to_gdal_mem: raster cannot be null.");
+	}
+	
+	if (NULL == rtn_drv) {
+		rterror("rt_raster_to_gdal_mem: rtn_drv cannot be null.");
+	}
+	
+	if (NULL == destroy_rtn_drv) {
+		rterror("rt_raster_to_gdal_mem: destroy_rtn_drv cannot be null.");
+	}
 
 	*destroy_rtn_drv = 0;
 
@@ -2195,7 +2348,11 @@ rt_raster_from_gdal_dataset(GDALDatasetH ds) {
 	uint32_t valueslen = 0;
 	uint8_t *ptr = NULL;
 
-	assert(NULL != ds);
+	//assert(NULL != ds);
+
+	if (NULL == ds) {
+		rterror("rt_raster_from_gdal_dataset: ds cannot be null.");
+	}
 
 	/* raster size */
 	width = GDALGetRasterXSize(ds);
@@ -2532,8 +2689,16 @@ rt_raster_gdal_rasterize(
 
 	RASTER_DEBUG(3, "starting");
 
-	assert(NULL != wkb);
-	assert(0 != wkb_len);
+	//assert(NULL != wkb);
+	//assert(0 != wkb_len);
+
+	if (NULL == wkb) {
+		rterror("rt_raster_gdal_rasterize: wkb cannot be null.");
+	}
+
+	if (0 == wkb_len) {
+		rterror("rt_raster_gdal_rasterize: wkb_len cannot be 0.");
+	}
 
 	/* internal variables */
 	arg = _rti_rasterize_arg_init();
@@ -3457,9 +3622,21 @@ rt_raster_from_two_rasters(
 	int dim[2] = {0};
 	double gt[6] = {0.};
 
-	assert(NULL != rast1);
-	assert(NULL != rast2);
-	assert(NULL != rtnraster);
+	//assert(NULL != rast1);
+	//assert(NULL != rast2);
+	//assert(NULL != rtnraster);
+
+	if (NULL == rast1) {
+		rterror("rt_raster_from_two_rasters: rast1 cannot be null.");
+	}
+
+	if (NULL == rast2) {
+		rterror("rt_raster_from_two_rasters: rast2 cannot be NULL.");
+	}
+
+	if (NULL == rtnraster) {
+		rterror("rt_raster_from_two_rasters: rtnraster cannot be NULL.");
+	}
 
 	/* set rtnraster to NULL */
 	*rtnraster = NULL;

@@ -215,7 +215,10 @@ rt_raster rt_raster_gdal_warp(
 
 	RASTER_DEBUG(3, "starting");
 
-	assert(NULL != raster);
+	//assert(NULL != raster);
+	if (NULL == raster) {
+		rterror("rt_raster_gdal_warp: raster cannot be NULL.");
+	}
 
 	/* internal variables */
 	arg = _rti_warp_arg_init();

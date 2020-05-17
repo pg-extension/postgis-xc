@@ -330,9 +330,9 @@ int rt_util_gdal_configured(void) {
 /*
 	register all GDAL drivers
 */
+static THR_LOCAL int registered = 0;
 int
 rt_util_gdal_register_all(int force_register_all) {
-	static int registered = 0;
 
 	if (registered && !force_register_all) {
 		RASTER_DEBUG(3, "Already called once... not calling GDALAllRegister");
@@ -370,14 +370,17 @@ rt_util_gdal_driver_registered(const char *drv) {
 }
 
 /* variable for PostgreSQL GUC: postgis.gdal_enabled_drivers */
-char *gdal_enabled_drivers = NULL;
+THR_LOCAL char *gdal_enabled_drivers = NULL;
 
 /*
 	wrapper for GDALOpen and GDALOpenShared
 */
 GDALDatasetH
 rt_util_gdal_open(const char *fn, GDALAccess fn_access, int shared) {
-	assert(NULL != fn);
+	//assert(NULL != fn);
+	if (NULL == fn) {
+		rterror("rt_util_gdal_open: fn cannot be NULL.");
+	}
 
 	if (gdal_enabled_drivers != NULL) {
 		if (strstr(gdal_enabled_drivers, GDAL_DISABLE_ALL) != NULL) {
@@ -407,7 +410,10 @@ rt_util_from_ogr_envelope(
 	OGREnvelope	env,
 	rt_envelope *ext
 ) {
-	assert(ext != NULL);
+	//assert(ext != NULL);
+	if (NULL == ext) {
+		rterror("rt_util_from_ogr_envelope: ext cannot be NULL.");
+	}
 
 	ext->MinX = env.MinX;
 	ext->MaxX = env.MaxX;
@@ -423,7 +429,10 @@ rt_util_to_ogr_envelope(
 	rt_envelope ext,
 	OGREnvelope	*env
 ) {
-	assert(env != NULL);
+	//assert(env != NULL);
+	if (NULL == env) {
+		rterror("rt_util_to_ogr_envelope: env cannot be NULL.");
+	}
 
 	env->MinX = ext.MinX;
 	env->MaxX = ext.MaxX;

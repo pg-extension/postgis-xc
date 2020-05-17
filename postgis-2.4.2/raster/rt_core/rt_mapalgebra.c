@@ -66,15 +66,23 @@ rt_band_reclass(
 	uint32_t x;
 	uint32_t y;
 	int i;
-	double or = 0;
+	double dor = 0;
 	double ov = 0;
 	double nr = 0;
 	double nv = 0;
 	int do_nv = 0;
 	rt_reclassexpr expr = NULL;
 
-	assert(NULL != srcband);
-	assert(NULL != exprset && exprcount > 0);
+	//assert(NULL != srcband);
+	//assert(NULL != exprset && exprcount > 0);
+	if (NULL == srcband) {
+		rterror("rt_band_reclass: srcband cannot be NULL.");
+	}
+	
+	if (NULL == exprset || exprcount == 0) {
+		rterror("rt_band_reclass: exprset cannot be NULL, exprcount cannot be 0.");
+	}
+
 	RASTER_DEBUGF(4, "exprcount = %d", exprcount);
 	RASTER_DEBUGF(4, "exprset @ %p", exprset);
 
@@ -317,9 +325,9 @@ rt_band_reclass(
 				nv = expr->dst.min;
 			}
 			else {
-				or = expr->src.max - expr->src.min;
+				dor = expr->src.max - expr->src.min;
 				nr = expr->dst.max - expr->dst.min;
-				nv = (((ov - expr->src.min) * nr) / or) + expr->dst.min;
+				nv = (((ov - expr->src.min) * nr) / dor) + expr->dst.min;
 
 				/* if dst range is from high to low */
 				if (expr->dst.min > expr->dst.max) {
@@ -858,8 +866,16 @@ rt_raster_iterator(
 
 	RASTER_DEBUG(3, "Starting...");
 
-	assert(itrset != NULL && itrcount > 0);
-	assert(rtnraster != NULL);
+	//assert(itrset != NULL && itrcount > 0);
+	//assert(rtnraster != NULL);
+
+	if (NULL == rtnraster) {
+		rterror("rt_raster_iterator: rtnraster cannot be NULL.");
+	}
+
+	if (NULL == itrset || itrcount == 0) {
+		rterror("rt_raster_iterator: itrset cannot be NULL, itrcount cannot be 0.");
+	}
 
 	/* init rtnraster to NULL */
 	*rtnraster = NULL;
@@ -1528,7 +1544,11 @@ rt_raster rt_raster_colormap(
 	int j = 0;
 	int k = 0;
 
-	assert(colormap != NULL);
+	//assert(colormap != NULL);
+
+	if (NULL == colormap) {
+		rterror("rt_raster_colormap: colormap cannot be NULL.");
+	}
 
 	/* empty raster */
 	if (rt_raster_is_empty(raster))
@@ -1601,9 +1621,9 @@ rt_raster rt_raster_colormap(
 	}
 
 	/* INTERPOLATE and only one non-NODATA entry */
-	if (colormap->method == CM_INTERPOLATE && arg->npos < 2) {
+	if (colormap->method == colormap->CM_INTERPOLATE && arg->npos < 2) {
 		rtwarn("Method INTERPOLATE requires at least two non-NODATA colormap entries. Using NEAREST instead");
-		colormap->method = CM_NEAREST;
+		colormap->method = colormap->CM_NEAREST;
 	}
 
 	/* NODATA entry but band has no NODATA value */
@@ -1616,10 +1636,10 @@ rt_raster rt_raster_colormap(
 	arg->nexpr = arg->npos;
 
 	/* INTERPOLATE needs one less than the number of entries */
-	if (colormap->method == CM_INTERPOLATE)
+	if (colormap->method == colormap->CM_INTERPOLATE)
 		arg->nexpr -= 1;
 	/* EXACT requires a no matching expression */
-	else if (colormap->method == CM_EXACT)
+	else if (colormap->method == colormap->CM_EXACT)
 		arg->nexpr += 1;
 
 	/* NODATA entry exists, add expression */
@@ -1689,7 +1709,7 @@ rt_raster rt_raster_colormap(
 
 		/* by non-NODATA entry */
 		for (j = 0; j < arg->npos; j++) {
-			if (colormap->method == CM_INTERPOLATE) {
+			if (colormap->method == colormap->CM_INTERPOLATE) {
 				if (j == arg->npos - 1)
 					continue;
 
@@ -1710,7 +1730,7 @@ rt_raster rt_raster_colormap(
 				arg->expr[k]->dst.inc_max = 1;
 				arg->expr[k]->dst.exc_max = 0;
 			}
-			else if (colormap->method == CM_NEAREST) {
+			else if (colormap->method == colormap->CM_NEAREST) {
 
 				/* NOT last entry */
 				if (j != arg->npos - 1) {
@@ -1746,7 +1766,7 @@ rt_raster rt_raster_colormap(
 				arg->expr[k]->dst.inc_max = 1;
 				arg->expr[k]->dst.exc_max = 0;
 			}
-			else if (colormap->method == CM_EXACT) {
+			else if (colormap->method == colormap->CM_EXACT) {
 				arg->expr[k]->src.min = colormap->entry[arg->pos[j]].value;
 				arg->expr[k]->src.inc_min = 1;
 				arg->expr[k]->src.exc_min = 0;
@@ -1788,7 +1808,7 @@ rt_raster rt_raster_colormap(
 		}
 
 		/* EXACT has one last expression for catching all uncaught values */
-		if (colormap->method == CM_EXACT) {
+		if (colormap->method == colormap->CM_EXACT) {
 			arg->expr[k]->src.min = 0;
 			arg->expr[k]->src.inc_min = 1;
 			arg->expr[k]->src.exc_min = 1;

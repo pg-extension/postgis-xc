@@ -129,16 +129,20 @@
  *   datum is copied for use.
  *****************************************************************************/
 
-#include <postgres.h> /* for palloc */
-#include <fmgr.h> /* for PG_MODULE_MAGIC */
-#include "utils/guc.h"
-#include "utils/memutils.h"
+//#include <postgres.h> /* for palloc */
+//#include <fmgr.h> /* for PG_MODULE_MAGIC */
+//#include "utils/guc.h"
+//#include "utils/memutils.h"
+
+#include "extension_dependency.h"
 
 #include "../../postgis_config.h"
 #include "lwgeom_pg.h"
 
 #include "rtpostgis.h"
 #include "rtpg_internal.h"
+
+#define GDAL_DATA_PATH  "/data1/llq4/Install/raster/gdal_path"
 
 #ifndef __GNUC__
 # define __attribute__ (x)
@@ -149,14 +153,18 @@
  */
 PG_MODULE_MAGIC;
 
-/* Module load callback */
-void _PG_init(void);
 
-/* Module unload callback */
-void _PG_fini(void);
+extern "C" {
+	/* Module load callback */
+	void _PG_init(void);
 
+	/* Module unload callback */
+	void _PG_fini(void);
+
+	void _PG_init_gdal();
+}
 #define RT_MSG_MAXLEN 256
-
+THR_LOCAL bool inited_gdal = false;
 
 /* ---------------------------------------------------------------- */
 /*  Memory allocation / error reporting hooks                       */
@@ -244,23 +252,23 @@ rt_pg_debug(const char *fmt, va_list ap)
 /*  PostGIS raster GUCs                                             */
 /* ---------------------------------------------------------------- */
 
-static char *gdal_datapath = NULL;
-extern char *gdal_enabled_drivers;
-extern char enable_outdb_rasters;
+//static char *gdal_datapath = NULL;
+extern THR_LOCAL char *gdal_enabled_drivers;
+extern THR_LOCAL bool enable_outdb_rasters;
 
 /* ---------------------------------------------------------------- */
 /*  Useful variables                                                */
 /* ---------------------------------------------------------------- */
 
-static char *env_postgis_gdal_enabled_drivers = NULL;
-static char *boot_postgis_gdal_enabled_drivers = NULL;
-static char *env_postgis_enable_outdb_rasters = NULL;
+//static char *env_postgis_gdal_enabled_drivers = NULL;
+//static char *boot_postgis_gdal_enabled_drivers = NULL;
+//static char *env_postgis_enable_outdb_rasters = NULL;
 
 /* postgis.gdal_datapath */
 static void
 rtpg_assignHookGDALDataPath(const char *newpath, void *extra) {
 	POSTGIS_RT_DEBUGF(4, "newpath = %s", newpath);
-	POSTGIS_RT_DEBUGF(4, "gdaldatapath = %s", gdal_datapath);
+	//POSTGIS_RT_DEBUGF(4, "gdaldatapath = %s", gdal_datapath);
 
 	/* clear finder cache */
 	CPLFinderClean();
@@ -418,10 +426,11 @@ rtpg_assignHookEnableOutDBRasters(bool enable, void *extra) {
 
 /* Module load callback */
 void
-_PG_init(void) {
+_PG_init_gdal(void) {
 
 	bool boot_postgis_enable_outdb_rasters = false;
 	MemoryContext old_context;
+	void *extra = NULL;
 
 	/*
 	 * Change to context for memory allocation calls like palloc() in the
@@ -433,12 +442,13 @@ _PG_init(void) {
 	 use POSTGIS_GDAL_ENABLED_DRIVERS to set the bootValue
 	 of GUC postgis.gdal_enabled_drivers
 	*/
+	#if 0
 	env_postgis_gdal_enabled_drivers = getenv("POSTGIS_GDAL_ENABLED_DRIVERS");
 	if (env_postgis_gdal_enabled_drivers == NULL) {
 		boot_postgis_gdal_enabled_drivers = palloc(
 			sizeof(char) * (strlen(GDAL_DISABLE_ALL) + 1)
 		);
-		sprintf(boot_postgis_gdal_enabled_drivers, "%s", GDAL_DISABLE_ALL);
+		sprintf(boot_postgis_gdal_enabled_drivers, "%s", GDAL_ENABLE_ALL);
 	}
 	else {
 		boot_postgis_gdal_enabled_drivers = rtpg_trim(
@@ -450,7 +460,10 @@ _PG_init(void) {
 		"boot_postgis_gdal_enabled_drivers = %s",
 		boot_postgis_gdal_enabled_drivers
 	);
+	#endif
+	
 
+	#if 0
 	/*
 	 use POSTGIS_ENABLE_OUTDB_RASTERS to set the bootValue
 	 of GUC postgis.enable_outdb_rasters
@@ -475,6 +488,7 @@ _PG_init(void) {
 		"boot_postgis_enable_outdb_rasters = %s",
 		boot_postgis_enable_outdb_rasters ? "TRUE" : "FALSE"
 	);
+	#endif
 
 	/* Install liblwgeom handlers */
 	pg_install_lwgeom_handlers();
@@ -482,6 +496,7 @@ _PG_init(void) {
 	/* Install rtcore handlers */
 	rt_set_handlers(rt_pg_alloc, rt_pg_realloc, rt_pg_free, rt_pg_error, rt_pg_debug, rt_pg_notice);
 
+	#if 0
 	/* Define custom GUC variables. */
 	if ( postgis_guc_find_option("postgis.gdal_datapath") )
 	{
@@ -505,6 +520,8 @@ _PG_init(void) {
 			NULL  /* GucShowHook show_hook */
 		);
 	}
+	#endif
+	#if 0
 
 	if ( postgis_guc_find_option("postgis.gdal_enabled_drivers") )
 	{
@@ -551,10 +568,28 @@ _PG_init(void) {
 			NULL  /* GucShowHook show_hook */
 		);
 	}
+	#endif
+	/* postgis.gdal_enabled_drivers is alway GDAL_ENABLE_ALL  */
+	gdal_enabled_drivers = palloc(sizeof(char) * (strlen(GDAL_ENABLE_ALL) + 1));
+	sprintf(gdal_enabled_drivers, "%s", GDAL_ENABLE_ALL);
+	rtpg_assignHookGDALEnabledDrivers(gdal_enabled_drivers, extra);
 
+	/* postgis.enable_outdb_rasters is alway true  */
+	enable_outdb_rasters = TRUE;
+
+	/* postgis.gdal_datapath */
+	rtpg_assignHookGDALDataPath(NULL, extra);
+
+	inited_gdal = true;
 	/* Revert back to old context */
 	MemoryContextSwitchTo(old_context);
 }
+
+void
+_PG_init(void) {
+	_PG_init_gdal();
+}
+
 
 /* Module unload callback */
 void
@@ -565,13 +600,16 @@ _PG_fini(void) {
 	old_context = MemoryContextSwitchTo(TopMemoryContext);
 
 	/* Clean up */
-	pfree(env_postgis_gdal_enabled_drivers);
-	pfree(boot_postgis_gdal_enabled_drivers);
-	pfree(env_postgis_enable_outdb_rasters);
+	//pfree(env_postgis_gdal_enabled_drivers);
+	//pfree(boot_postgis_gdal_enabled_drivers);
+	//pfree(env_postgis_enable_outdb_rasters);
 
-	env_postgis_gdal_enabled_drivers = NULL;
-	boot_postgis_gdal_enabled_drivers = NULL;
-	env_postgis_enable_outdb_rasters = NULL;
+	//env_postgis_gdal_enabled_drivers = NULL;
+	//boot_postgis_gdal_enabled_drivers = NULL;
+	//env_postgis_enable_outdb_rasters = NULL;
+
+	pfree(gdal_enabled_drivers);
+	gdal_enabled_drivers = NULL;
 
 	/* Revert back to old context */
 	MemoryContextSwitchTo(old_context);

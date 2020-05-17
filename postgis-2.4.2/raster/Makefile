@@ -19,7 +19,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #############################################################################
 
-all:     
+all: corelib pglib rtloader rtpostgis.sql 
 
 corelib:
 	$(MAKE) -C rt_core

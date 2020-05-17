@@ -27,32 +27,38 @@
  *
  */
 
-#include <postgres.h>
-#include <fmgr.h>
-#include <funcapi.h> /* for SRF */
-#include <utils/builtins.h> /* for text_to_cstring() */
-#include "utils/lsyscache.h" /* for get_typlenbyvalalign */
-#include "utils/array.h" /* for ArrayType */
-#include "catalog/pg_type.h" /* for INT2OID, INT4OID, FLOAT4OID, FLOAT8OID and TEXTOID */
+//#include <postgres.h>
+//#include <fmgr.h>
+//#include <funcapi.h> /* for SRF */
+//#include <utils/builtins.h> /* for text_to_cstring() */
+//#include "utils/lsyscache.h" /* for get_typlenbyvalalign */
+//#include "utils/array.h" /* for ArrayType */
+//#include "catalog/pg_type.h" /* for INT2OID, INT4OID, FLOAT4OID, FLOAT8OID and TEXTOID */
+
+#include "extension_dependency.h"
 
 #include "../../postgis_config.h"
 
 
-#include "access/htup_details.h" /* for heap_form_tuple() */
+//#include "access/htup_details.h" /* for heap_form_tuple() */
 
 
 #include "rtpostgis.h"
 #include "rtpg_internal.h"
 
 /* convert GDAL raster to raster */
-Datum RASTER_fromGDALRaster(PG_FUNCTION_ARGS);
+extern "C" {
+	Datum RASTER_fromGDALRaster(PG_FUNCTION_ARGS);
 
-/* convert raster to GDAL raster */
-Datum RASTER_asGDALRaster(PG_FUNCTION_ARGS);
-Datum RASTER_getGDALDrivers(PG_FUNCTION_ARGS);
+	/* convert raster to GDAL raster */
+	Datum RASTER_asGDALRaster(PG_FUNCTION_ARGS);
+	Datum RASTER_getGDALDrivers(PG_FUNCTION_ARGS);
 
-/* warp a raster using GDAL Warp API */
-Datum RASTER_GDALWarp(PG_FUNCTION_ARGS);
+	/* warp a raster using GDAL Warp API */
+	Datum RASTER_GDALWarp(PG_FUNCTION_ARGS);
+	void _PG_init_gdal(void);
+}
+extern THR_LOCAL bool inited_gdal;
 
 /* ---------------------------------------------------------------- */
 /* Returns raster from GDAL raster                                  */
@@ -73,6 +79,10 @@ Datum RASTER_fromGDALRaster(PG_FUNCTION_ARGS)
 	/* NULL if NULL */
 	if (PG_ARGISNULL(0))
 		PG_RETURN_NULL();
+
+	if (inited_gdal == false) {
+		_PG_init_gdal();
+	}
 
 	/* get data */
 	bytea_data = (bytea *) PG_GETARG_BYTEA_P(0);
@@ -173,6 +183,10 @@ Datum RASTER_asGDALRaster(PG_FUNCTION_ARGS)
 	uint64_t gdal_size = 0;
 	bytea *result = NULL;
 	uint64_t result_size = 0;
+
+	if (inited_gdal == false) {
+		_PG_init_gdal();
+	}
 
 	POSTGIS_RT_DEBUG(3, "RASTER_asGDALRaster: Starting");
 
@@ -352,6 +366,10 @@ Datum RASTER_getGDALDrivers(PG_FUNCTION_ARGS)
 	int call_cntr;
 	int max_calls;
 
+	if (inited_gdal == false) {
+		_PG_init_gdal();
+	}
+
 	/* first call of function */
 	if (SRF_IS_FIRSTCALL()) {
 		MemoryContext oldcontext;
@@ -482,6 +500,10 @@ Datum RASTER_GDALWarp(PG_FUNCTION_ARGS)
 	int *dim_y = NULL;
 
 	POSTGIS_RT_DEBUG(3, "RASTER_GDALWarp: Starting");
+
+	if (inited_gdal == false) {
+		_PG_init_gdal();
+	}
 
 	/* pgraster is null, return null */
 	if (PG_ARGISNULL(0))

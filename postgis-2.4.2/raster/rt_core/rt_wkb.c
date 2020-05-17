@@ -44,8 +44,15 @@ rt_band_from_wkb(
 	unsigned long sz = 0;
 	uint32_t v = 0;
 
-	assert(NULL != ptr);
-	assert(NULL != end);
+	//assert(NULL != ptr);
+	//assert(NULL != end);
+	if (NULL == ptr) {
+		rterror("rt_band_from_wkb: ptr cannot be NULL.");
+	}
+
+	if (NULL == end) {
+		rterror("rt_band_from_wkb: end cannot be NULL.");
+	}
 
 	band = rtalloc(sizeof (struct rt_band_t));
 	if (!band) {
@@ -282,7 +289,10 @@ rt_raster_from_wkb(const uint8_t* wkb, uint32_t wkbsize) {
 	uint16_t i = 0;
 	uint16_t j = 0;
 
-	assert(NULL != ptr);
+	//assert(NULL != ptr);
+	if (NULL == ptr) {
+		rterror("rt_raster_from_wkb: ptr cannot be NULL.");
+	}
 
 	/* Check that wkbsize is >= sizeof(rt_raster_serialized) */
 	if (wkbsize < RT_WKB_HDR_SZ) {
@@ -409,7 +419,10 @@ rt_raster_from_hexwkb(const char* hexwkb, uint32_t hexwkbsize) {
 	uint32_t wkbsize = 0;
 	uint32_t i = 0;
 
-	assert(NULL != hexwkb);
+	//assert(NULL != hexwkb);
+	if (NULL == hexwkb) {
+		rterror("rt_raster_from_hexwkb: hexwkb cannot be NULL.");
+	}
 
 	RASTER_DEBUGF(3, "input wkb: %s", hexwkb);
 	RASTER_DEBUGF(3, "input wkbsize: %d", hexwkbsize);
@@ -442,7 +455,10 @@ rt_raster_wkb_size(rt_raster raster, int outasin) {
 	uint32_t size = RT_WKB_HDR_SZ;
 	uint16_t i = 0;
 
-	assert(NULL != raster);
+	//assert(NULL != raster);
+	if (NULL == raster) {
+		rterror("rt_raster_wkb_size: raster cannot be NULL.");
+	}
 
 	RASTER_DEBUGF(3, "rt_raster_wkb_size: computing size for %d bands",
 		raster->numBands);
@@ -502,8 +518,14 @@ rt_raster_to_wkb(rt_raster raster, int outasin, uint32_t *wkbsize) {
 	uint16_t i = 0;
 	uint8_t littleEndian = isMachineLittleEndian();
 
-	assert(NULL != raster);
-	assert(NULL != wkbsize);
+	//assert(NULL != raster);
+	//assert(NULL != wkbsize);
+	if (NULL == raster) {
+		rterror("rt_raster_to_wkb: raster cannot be NULL.");
+	}
+	if (NULL == wkbsize) {
+		rterror("rt_raster_to_wkb: wkbsize cannot be NULL.");
+	}
 
 	RASTER_DEBUG(2, "rt_raster_to_wkb: about to call rt_raster_wkb_size");
 
@@ -671,8 +693,14 @@ rt_raster_to_hexwkb(rt_raster raster, int outasin, uint32_t *hexwkbsize) {
 	char* hexwkb = NULL;
 	uint32_t wkbsize = 0;
 
-	assert(NULL != raster);
-	assert(NULL != hexwkbsize);
+	//assert(NULL != raster);
+	//assert(NULL != hexwkbsize);
+	if (NULL == raster) {
+		rterror("rt_raster_to_hexwkb: raster cannot be NULL.");
+	}
+	if (NULL == hexwkbsize) {
+		rterror("rt_raster_to_hexwkb: hexwkbsize cannot be NULL.");
+	}
 
 	RASTER_DEBUG(2, "rt_raster_to_hexwkb: calling rt_raster_to_wkb");
 

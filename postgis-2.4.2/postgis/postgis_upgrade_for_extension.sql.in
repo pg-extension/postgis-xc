@@ -2246,7 +2246,7 @@ CREATE OR REPLACE FUNCTION postgis_libxml_version() RETURNS text
 	AS '$libdir/postgis-2.4'
 	LANGUAGE 'c' IMMUTABLE;
 CREATE OR REPLACE FUNCTION postgis_scripts_build_date() RETURNS text
-	AS 'SELECT ''2018-07-17 03:16:24''::text AS version'
+	AS 'SELECT ''2020-03-23 06:50:15''::text AS version'
 	LANGUAGE 'sql' IMMUTABLE;
 CREATE OR REPLACE FUNCTION postgis_lib_build_date() RETURNS text
 	AS '$libdir/postgis-2.4'

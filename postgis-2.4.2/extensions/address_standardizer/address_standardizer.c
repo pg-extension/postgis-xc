@@ -1,7 +1,8 @@
-#include "postgres.h"
-#include "funcapi.h"
-#include "catalog/pg_type.h"
-#include "fmgr.h"
+//#include "postgres.h"
+//#include "funcapi.h"
+//#include "catalog/pg_type.h"
+//#include "fmgr.h"
+#include "extension_dependency.h"
 
 #undef DEBUG
 //#define DEBUG 1
