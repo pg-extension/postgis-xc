@@ -16,7 +16,7 @@ int wkt_yylex(void);
 
 
 /* Declare the global parser variable */
-LWGEOM_PARSER_RESULT global_parser_result;
+THR_LOCAL LWGEOM_PARSER_RESULT global_parser_result;
 
 /* Turn on/off verbose parsing (turn off for production) */
 int wkt_yydebug = 0;
@@ -103,7 +103,7 @@ int lwgeom_parse_wkt(LWGEOM_PARSER_RESULT *parser_result, char *wktstr, int pars
 
 %locations
 %error-verbose
-%name-prefix "wkt_yy"
+%name-prefix="wkt_yy"
 
 %union {
 	int integervalue;

@@ -112,6 +112,8 @@ struct rtpg_nmapalgebra_arg_t {
 	rtpg_nmapalgebra_callback_arg	callback;
 };
 
+#pragma GCC push_options
+#pragma GCC optimize("O0")
 bool function_args_consistent_check(Oid funcId, int nargs, Oid* args)
 {
 	HeapTuple	tp;
@@ -131,6 +133,7 @@ bool function_args_consistent_check(Oid funcId, int nargs, Oid* args)
 	else
 		return false;
 }
+#pragma GCC pop_options
 
 static rtpg_nmapalgebra_arg rtpg_nmapalgebra_arg_init() {
 	rtpg_nmapalgebra_arg arg = NULL;
