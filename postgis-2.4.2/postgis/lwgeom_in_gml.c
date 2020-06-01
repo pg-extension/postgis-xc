@@ -206,6 +206,7 @@ static bool is_xlink(xmlNodePtr node)
 		xmlFree(prop);
 		return false;
 	}
+	xmlFree(prop);
 
 	prop = xmlGetNsProp(node, (xmlChar *)"href", (xmlChar *) XLINK_NS);
 	if (prop == NULL) return false;
