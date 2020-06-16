@@ -8,7 +8,7 @@
 #include "lwin_wkt_parse.h"
 #include "lwgeom_log.h"
 
-static YY_BUFFER_STATE wkt_yy_buf_state; 
+static THR_LOCAL YY_BUFFER_STATE wkt_yy_buf_state; 
 
 
 /*

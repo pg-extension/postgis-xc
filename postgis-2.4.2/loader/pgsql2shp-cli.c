@@ -24,7 +24,11 @@
     fprintf(stderr, "%s%s%c\n", argv[0], s, c);\
   }
 
-#if 0
+int     pgis_opterr = 1;
+int     pgis_optind = 1;
+int     pgis_optopt;
+char    *pgis_optarg;
+
 int
 pgis_getopt(int argc, char **argv, char *opts)
 {
@@ -82,7 +86,6 @@ pgis_getopt(int argc, char **argv, char *opts)
 	}
 	return(c);
 }
-#endif
 
 static void
 usage(int status)

@@ -588,6 +588,7 @@ static int ParseGMLCoordinates( const CPLXMLNode *psGeomNode, OGRGeometry *poGeo
     return iCoord > 0.0;
 }
 
+static THR_LOCAL int bWarnedOnce = FALSE;
 #ifdef HAVE_GEOS
 /************************************************************************/
 /*                         GML2FaceExtRing()                            */
@@ -600,7 +601,7 @@ static int ParseGMLCoordinates( const CPLXMLNode *psGeomNode, OGRGeometry *poGeo
 /*      any other simply represents a single "hole", and should be      */
 /*      consequently ignored at all.                                    */
 /************************************************************************/
-static THR_LOCAL int bWarnedOnce = FALSE;
+
 static OGRPolygon *GML2FaceExtRing( OGRGeometry *poGeom )
 {
     OGRPolygon *poPolygon = NULL;
