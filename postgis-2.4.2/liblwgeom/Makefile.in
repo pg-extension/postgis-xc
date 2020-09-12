@@ -216,7 +216,7 @@ $(LT_NM_OBJS): %.lo: %.c
 lwin_wkt_parse.c lwin_wkt_parse.h: lwin_wkt_parse.y
 	$(YACC) -o'lwin_wkt_parse.c' -d lwin_wkt_parse.y
 
-#lwin_wkt_lex.c: lwin_wkt_lex.l
+# lwin_wkt_lex.c: lwin_wkt_lex.l
 #	$(LEX) -i lwin_wkt_lex.l
 
 liblwgeom.h: liblwgeom.h.in
